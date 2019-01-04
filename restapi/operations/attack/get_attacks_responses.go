@@ -68,6 +68,11 @@ const GetAttacksInternalServerErrorCode int = 500
 swagger:response getAttacksInternalServerError
 */
 type GetAttacksInternalServerError struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewGetAttacksInternalServerError creates GetAttacksInternalServerError with default headers values
@@ -76,10 +81,25 @@ func NewGetAttacksInternalServerError() *GetAttacksInternalServerError {
 	return &GetAttacksInternalServerError{}
 }
 
+// WithPayload adds the payload to the get attacks internal server error response
+func (o *GetAttacksInternalServerError) WithPayload(payload *models.Error) *GetAttacksInternalServerError {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get attacks internal server error response
+func (o *GetAttacksInternalServerError) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *GetAttacksInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(500)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

@@ -53,7 +53,10 @@ func init() {
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -86,12 +89,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/AttackResponse"
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -119,8 +116,17 @@ func init() {
               "$ref": "#/definitions/AttackResponse"
             }
           },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -163,8 +169,23 @@ func init() {
               "$ref": "#/definitions/AttackResponse"
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -197,7 +218,7 @@ func init() {
         "duration": {
           "description": "Duration of the test",
           "type": "string",
-          "format": "time",
+          "format": "duration",
           "example": "10s"
         },
         "h2c": {
@@ -205,7 +226,7 @@ func init() {
           "type": "boolean",
           "default": true
         },
-        "header": {
+        "headers": {
           "description": "Request headers as a string array.",
           "type": "array",
           "items": {
@@ -246,10 +267,10 @@ func init() {
         },
         "rate": {
           "description": "Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.",
-          "type": "string",
-          "format": "duration",
-          "default": "50/1s",
-          "example": "50/1s"
+          "type": "integer",
+          "format": "int",
+          "default": 50,
+          "example": 50
         },
         "redirects": {
           "description": "Specifies the max number of redirects followed on each request. The default is 10. When the value is -1, redirects are not followed but the response is marked as successful.",
@@ -316,6 +337,20 @@ func init() {
         "isCanceled": {
           "description": "The attack cancel object",
           "type": "boolean"
+        }
+      }
+    },
+    "Error": {
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },
@@ -418,7 +453,10 @@ func init() {
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -451,12 +489,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/AttackResponse"
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -484,8 +516,17 @@ func init() {
               "$ref": "#/definitions/AttackResponse"
             }
           },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -528,8 +569,23 @@ func init() {
               "$ref": "#/definitions/AttackResponse"
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -562,7 +618,7 @@ func init() {
         "duration": {
           "description": "Duration of the test",
           "type": "string",
-          "format": "time",
+          "format": "duration",
           "example": "10s"
         },
         "h2c": {
@@ -570,7 +626,7 @@ func init() {
           "type": "boolean",
           "default": true
         },
-        "header": {
+        "headers": {
           "description": "Request headers as a string array.",
           "type": "array",
           "items": {
@@ -611,10 +667,10 @@ func init() {
         },
         "rate": {
           "description": "Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.",
-          "type": "string",
-          "format": "duration",
-          "default": "50/1s",
-          "example": "50/1s"
+          "type": "integer",
+          "format": "int",
+          "default": 50,
+          "example": 50
         },
         "redirects": {
           "description": "Specifies the max number of redirects followed on each request. The default is 10. When the value is -1, redirects are not followed but the response is marked as successful.",
@@ -681,6 +737,20 @@ func init() {
         "isCanceled": {
           "description": "The attack cancel object",
           "type": "boolean"
+        }
+      }
+    },
+    "Error": {
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },

@@ -57,6 +57,50 @@ func (o *GetAttackByIDOK) WriteResponse(rw http.ResponseWriter, producer runtime
 	}
 }
 
+// GetAttackByIDNotFoundCode is the HTTP code returned for type GetAttackByIDNotFound
+const GetAttackByIDNotFoundCode int = 404
+
+/*GetAttackByIDNotFound Not found
+
+swagger:response getAttackByIdNotFound
+*/
+type GetAttackByIDNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetAttackByIDNotFound creates GetAttackByIDNotFound with default headers values
+func NewGetAttackByIDNotFound() *GetAttackByIDNotFound {
+
+	return &GetAttackByIDNotFound{}
+}
+
+// WithPayload adds the payload to the get attack by Id not found response
+func (o *GetAttackByIDNotFound) WithPayload(payload *models.Error) *GetAttackByIDNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get attack by Id not found response
+func (o *GetAttackByIDNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetAttackByIDNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // GetAttackByIDInternalServerErrorCode is the HTTP code returned for type GetAttackByIDInternalServerError
 const GetAttackByIDInternalServerErrorCode int = 500
 
@@ -65,6 +109,11 @@ const GetAttackByIDInternalServerErrorCode int = 500
 swagger:response getAttackByIdInternalServerError
 */
 type GetAttackByIDInternalServerError struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewGetAttackByIDInternalServerError creates GetAttackByIDInternalServerError with default headers values
@@ -73,10 +122,25 @@ func NewGetAttackByIDInternalServerError() *GetAttackByIDInternalServerError {
 	return &GetAttackByIDInternalServerError{}
 }
 
+// WithPayload adds the payload to the get attack by Id internal server error response
+func (o *GetAttackByIDInternalServerError) WithPayload(payload *models.Error) *GetAttackByIDInternalServerError {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get attack by Id internal server error response
+func (o *GetAttackByIDInternalServerError) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *GetAttackByIDInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(500)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

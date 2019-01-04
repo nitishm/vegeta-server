@@ -57,6 +57,94 @@ func (o *PutAttackByIDCancelOK) WriteResponse(rw http.ResponseWriter, producer r
 	}
 }
 
+// PutAttackByIDCancelBadRequestCode is the HTTP code returned for type PutAttackByIDCancelBadRequest
+const PutAttackByIDCancelBadRequestCode int = 400
+
+/*PutAttackByIDCancelBadRequest Bad Request
+
+swagger:response putAttackByIdCancelBadRequest
+*/
+type PutAttackByIDCancelBadRequest struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutAttackByIDCancelBadRequest creates PutAttackByIDCancelBadRequest with default headers values
+func NewPutAttackByIDCancelBadRequest() *PutAttackByIDCancelBadRequest {
+
+	return &PutAttackByIDCancelBadRequest{}
+}
+
+// WithPayload adds the payload to the put attack by Id cancel bad request response
+func (o *PutAttackByIDCancelBadRequest) WithPayload(payload *models.Error) *PutAttackByIDCancelBadRequest {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put attack by Id cancel bad request response
+func (o *PutAttackByIDCancelBadRequest) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutAttackByIDCancelBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PutAttackByIDCancelNotFoundCode is the HTTP code returned for type PutAttackByIDCancelNotFound
+const PutAttackByIDCancelNotFoundCode int = 404
+
+/*PutAttackByIDCancelNotFound Not found
+
+swagger:response putAttackByIdCancelNotFound
+*/
+type PutAttackByIDCancelNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutAttackByIDCancelNotFound creates PutAttackByIDCancelNotFound with default headers values
+func NewPutAttackByIDCancelNotFound() *PutAttackByIDCancelNotFound {
+
+	return &PutAttackByIDCancelNotFound{}
+}
+
+// WithPayload adds the payload to the put attack by Id cancel not found response
+func (o *PutAttackByIDCancelNotFound) WithPayload(payload *models.Error) *PutAttackByIDCancelNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put attack by Id cancel not found response
+func (o *PutAttackByIDCancelNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutAttackByIDCancelNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PutAttackByIDCancelInternalServerErrorCode is the HTTP code returned for type PutAttackByIDCancelInternalServerError
 const PutAttackByIDCancelInternalServerErrorCode int = 500
 
@@ -65,6 +153,11 @@ const PutAttackByIDCancelInternalServerErrorCode int = 500
 swagger:response putAttackByIdCancelInternalServerError
 */
 type PutAttackByIDCancelInternalServerError struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
 }
 
 // NewPutAttackByIDCancelInternalServerError creates PutAttackByIDCancelInternalServerError with default headers values
@@ -73,10 +166,25 @@ func NewPutAttackByIDCancelInternalServerError() *PutAttackByIDCancelInternalSer
 	return &PutAttackByIDCancelInternalServerError{}
 }
 
+// WithPayload adds the payload to the put attack by Id cancel internal server error response
+func (o *PutAttackByIDCancelInternalServerError) WithPayload(payload *models.Error) *PutAttackByIDCancelInternalServerError {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put attack by Id cancel internal server error response
+func (o *PutAttackByIDCancelInternalServerError) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *PutAttackByIDCancelInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
 	rw.WriteHeader(500)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

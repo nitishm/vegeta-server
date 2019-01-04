@@ -40,7 +40,10 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 	api.AttackGetAttackByIDHandler = attack.GetAttackByIDHandlerFunc(func(params attack.GetAttackByIDParams) middleware.Responder {
 		status, err := at.Status(params.AttackID)
 		if err != nil {
-			return attack.NewGetAttackByIDInternalServerError()
+			code := http.StatusText(http.StatusInternalServerError)
+			message := err.Error()
+			e := &models.Error{Code: &code, Message: &message}
+			return attack.NewGetAttackByIDInternalServerError().WithPayload(e)
 		}
 
 		return attack.NewGetAttackByIDOK().WithPayload(&models.AttackResponse{
@@ -61,7 +64,10 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 	api.AttackPutAttackByIDCancelHandler = attack.PutAttackByIDCancelHandlerFunc(func(params attack.PutAttackByIDCancelParams) middleware.Responder {
 		status, err := at.Cancel(params.AttackID, *params.Body.IsCanceled)
 		if err != nil {
-			return attack.NewPutAttackByIDCancelInternalServerError()
+			code := http.StatusText(http.StatusInternalServerError)
+			message := err.Error()
+			e := &models.Error{Code: &code, Message: &message}
+			return attack.NewPutAttackByIDCancelInternalServerError().WithPayload(e)
 		}
 
 		return attack.NewPutAttackByIDCancelOK().WithPayload(&models.AttackResponse{

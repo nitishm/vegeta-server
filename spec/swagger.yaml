@@ -33,10 +33,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/AttackResponse'
-        '400':
-          description: Bad Request
-        '500':
-          description: Internal Server Error
+        # '400':
+        #   description: Bad Request
+        #   schema:
+        #     $ref: '#/definitions/Error'
+        # '500':
+        #   description: Internal Server Error
+        #   schema:
+        #     $ref: '#/definitions/Error'
     get:
       summary: Get a list of all attack details
       tags:
@@ -49,6 +53,8 @@ paths:
             $ref: '#/definitions/AttackResponseList'
         '500':
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
   '/attack/{attackID}':
     get:
       summary: Get attack details by ID
@@ -66,8 +72,14 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/AttackResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         '500':
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
   '/attack/{attackID}/cancel':
     put:
       summary: Cancel an attack by ID
@@ -95,8 +107,18 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/AttackResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
         '500':
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
 definitions:
   Attack:
     properties:
@@ -113,13 +135,13 @@ definitions:
       duration:
         description: Duration of the test
         example: 10s
-        format: time
+        format: duration 
         type: string
       h2c:
         default: true
         description: Send HTTP/2 requests without TLS encryption
         type: boolean
-      header:
+      headers:
         description: Request headers as a string array.
         example:
           - 'Accept: text/html'
@@ -146,11 +168,11 @@ definitions:
         example: 10M
         type: string
       rate:
-        default: 50/1s
+        default: 50
         description: 'Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.'
-        example: 50/1s
-        format: duration
-        type: string
+        example: 50
+        format: int
+        type: integer 
       redirects:
         description: 'Specifies the max number of redirects followed on each request. The default is 10. When the value is -1, redirects are not followed but the response is marked as successful.'
         format: int
@@ -233,6 +255,15 @@ definitions:
     required:
       - isCanceled
     type: object
+  Error:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    required:
+      - code
+      - message
 tags:
   - description: Attack endpoints
     name: attack

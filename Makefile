@@ -4,7 +4,7 @@ VERSION=$(shell git describe --tags --exact-match --always)
 DATE=$(shell date +'%FT%TZ%z')
 
 GO  = GO111MODULE=on go
-all: fmt lint validate build test
+all: fmt lint build test
 
 build: deps fmt
 	CGO_ENABLED=0 ${GO} build -v -a -tags=netgo \

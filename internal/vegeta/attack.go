@@ -9,11 +9,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"vegeta-server/models"
+	"vegeta-server/pkg/vegeta"
 
 	"github.com/satori/go.uuid"
+	vegetalib "github.com/tsenart/vegeta/lib"
 )
-
-type AttackParams *models.Attack
 
 type attackContext struct {
 	context.Context
@@ -25,25 +25,29 @@ type attackEntry struct {
 	status string
 }
 
+// Status returns the attack status
 func (ae *attackEntry) Status() string {
 	return ae.status
 }
 
-func (ae *attackEntry) Schedule() error {
+// Schedule an attack and once scheduled invoke the Run method
+func (ae *attackEntry) Schedule(params interface{}) error {
 	if ae.status == models.AttackResponseStatusCanceled || ae.status == models.AttackResponseStatusRunning || ae.status == models.AttackResponseStatusCompleted {
 		return fmt.Errorf("Cannot schedule attack %s with status %v", ae.uuid, ae.status)
 	}
+
 	log.WithField("UUID", ae.uuid).Info("Scheduled")
 
 	time.AfterFunc(time.Second*5, func() {
-		_ = ae.Run()
+		_ = ae.Run(params)
 	})
 
 	ae.status = models.AttackResponseStatusScheduled
 	return nil
 }
 
-func (ae *attackEntry) Run() error {
+// Run an attack against the target
+func (ae *attackEntry) Run(params interface{}) error {
 	if ae.status != models.AttackResponseStatusScheduled {
 		return fmt.Errorf("Cannot run attack %s with status %v", ae.uuid, ae.status)
 	}
@@ -51,25 +55,14 @@ func (ae *attackEntry) Run() error {
 	log.WithField("UUID", ae.uuid).Info("Running")
 	ae.status = models.AttackResponseStatusRunning
 
-	//TODO: Invoke the attack function
-	attackFunc := func(entry *attackEntry) {
-		select {
-		case <-time.After(60 * time.Second):
-			err := entry.Complete()
-			if err != nil {
-				log.WithError(err).Error("Failed to Complete")
-				_ = entry.Fail()
-			}
-		case <-entry.ctx.Done():
-			log.Warnf("Attack %s was canceled", entry.uuid)
-			break
-		}
-	}
+	attackOpts := convertParamsToAttackOpts(ae.uuid, params)
 
-	go attackFunc(ae)
+	go attackHandler(ae, attackOpts, vegeta.DefaultAttackFunc)
+
 	return nil
 }
 
+// Complete marks the attack as completed
 func (ae *attackEntry) Complete() error {
 	if ae.status != models.AttackResponseStatusRunning {
 		return fmt.Errorf("Cannot mark attack %s completed when in status %v", ae.uuid, ae.status)
@@ -79,8 +72,9 @@ func (ae *attackEntry) Complete() error {
 	return nil
 }
 
+// Cancel an attack and update the status as canceled
 func (ae *attackEntry) Cancel() error {
-	if ae.status == models.AttackResponseStatusCompleted || ae.status == models.AttackResponseStatusFailed || ae.status == models.AttackResponseStatusCanceled {
+	if ae.status == models.AttackResponseStatusCompleted || ae.status == models.AttackResponseStatusFailed {
 		return fmt.Errorf("Cannot cancel attack %s  with status %v", ae.uuid, ae.status)
 	}
 	// Cancel the attack context
@@ -91,6 +85,7 @@ func (ae *attackEntry) Cancel() error {
 	return nil
 }
 
+// Fail marks the attack status as failed
 func (ae *attackEntry) Fail() error {
 	_ = ae.Cancel()
 	log.WithField("UUID", ae.uuid).Info("Failed")
@@ -98,6 +93,7 @@ func (ae *attackEntry) Fail() error {
 	return nil
 }
 
+// UUID returns the ID of the attack
 func (ae *attackEntry) UUID() string {
 	return ae.uuid
 }
@@ -107,11 +103,13 @@ type attackCmd struct {
 	params interface{}
 }
 
+// AttackIntf is the Attacker interface
 type AttackIntf interface {
-	Schedule(AttackParams) string
+	Schedule(interface{}) string
 	Status(string) (string, error)
 }
 
+// Attacker implements the AttackIntf
 type Attacker struct {
 	ch        chan attackCmd
 	lock      sync.RWMutex
@@ -119,6 +117,7 @@ type Attacker struct {
 	quit      chan struct{}
 }
 
+// NewAttacker returns an instance of a new attacker.
 func NewAttacker() *Attacker {
 	at := &Attacker{
 		scheduler: make(map[string]*attackEntry),
@@ -131,7 +130,8 @@ func NewAttacker() *Attacker {
 	return at
 }
 
-func (at *Attacker) Schedule(params AttackParams) string {
+// Schedule adds the attack command to the scheduler
+func (at *Attacker) Schedule(params interface{}) string {
 	// Generate a uuid for the attack
 	id := uuid.NewV4().String()
 
@@ -145,6 +145,7 @@ func (at *Attacker) Schedule(params AttackParams) string {
 	return id
 }
 
+// Status returns the status for an attack by its ID
 func (at *Attacker) Status(uuid string) (string, error) {
 	at.lock.RLock()
 	defer at.lock.RUnlock()
@@ -155,6 +156,7 @@ func (at *Attacker) Status(uuid string) (string, error) {
 	}
 }
 
+// Cancel an attack by its ID
 func (at *Attacker) Cancel(uuid string, cancel bool) (string, error) {
 	at.lock.Lock()
 	defer at.lock.Unlock()
@@ -165,6 +167,7 @@ func (at *Attacker) Cancel(uuid string, cancel bool) (string, error) {
 		return entry.Status(), err
 	}
 }
+
 func (at *Attacker) startAttackHandler() {
 	fmt.Println("Starting Attack Handlers")
 	for {
@@ -182,7 +185,7 @@ func (at *Attacker) startAttackHandler() {
 
 			at.scheduler[cmd.uuid] = entry
 			// Mark attack as Scheduled
-			err := entry.Schedule()
+			err := entry.Schedule(cmd.params)
 			if err != nil {
 				log.WithError(err).Error("Failed to Schedule")
 				_ = entry.Fail()
@@ -192,5 +195,34 @@ func (at *Attacker) startAttackHandler() {
 		case <-at.quit:
 			break
 		}
+	}
+}
+
+func convertParamsToAttackOpts(name string, params interface{}) *vegeta.AttackOpts {
+	switch p := params.(type) {
+	case *models.Attack:
+		opts := &vegeta.AttackOpts{}
+		opts.Name = name
+		opts.Rate = vegetalib.Rate{Freq: int(*p.Rate), Per: time.Second}
+		opts.Duration = time.Duration(*p.Duration)
+		return nil
+	default:
+		return nil
+	}
+}
+
+func attackHandler(entry *attackEntry, opts *vegeta.AttackOpts, fn vegeta.AttackFunc) {
+	result := fn(opts)
+
+	select {
+	case <-result:
+		err := entry.Complete()
+		if err != nil {
+			log.WithError(err).Error("Failed to Complete")
+			_ = entry.Fail()
+		}
+	case <-entry.ctx.Done():
+		log.Warnf("Attack %s was canceled", entry.uuid)
+		break
 	}
 }

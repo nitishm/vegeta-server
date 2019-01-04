@@ -28,13 +28,14 @@ type Attack struct {
 
 	// Duration of the test
 	// Required: true
-	Duration *string `json:"duration"`
+	// Format: duration
+	Duration *strfmt.Duration `json:"duration"`
 
 	// Send HTTP/2 requests without TLS encryption
 	H2c *bool `json:"h2c,omitempty"`
 
 	// Request headers as a string array.
-	Header []string `json:"header"`
+	Headers []string `json:"headers"`
 
 	// Send HTTP/2 requests when supported by the server
 	Http2 *bool `json:"http2,omitempty"`
@@ -57,8 +58,7 @@ type Attack struct {
 
 	// Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.
 	// Required: true
-	// Format: duration
-	Rate *strfmt.Duration `json:"rate"`
+	Rate *int64 `json:"rate"`
 
 	// Specifies the max number of redirects followed on each request. The default is 10. When the value is -1, redirects are not followed but the response is marked as successful.
 	Redirects int64 `json:"redirects,omitempty"`
@@ -112,6 +112,10 @@ func (m *Attack) validateDuration(formats strfmt.Registry) error {
 		return err
 	}
 
+	if err := validate.FormatOf("duration", "body", "duration", m.Duration.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -131,10 +135,6 @@ func (m *Attack) validateLaddr(formats strfmt.Registry) error {
 func (m *Attack) validateRate(formats strfmt.Registry) error {
 
 	if err := validate.Required("rate", "body", m.Rate); err != nil {
-		return err
-	}
-
-	if err := validate.FormatOf("rate", "body", "duration", m.Rate.String(), formats); err != nil {
 		return err
 	}
 
