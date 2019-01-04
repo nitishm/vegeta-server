@@ -11,6 +11,7 @@
 # Output of the go coverage tool
 *.out
 coverage.txt
+profile.cov
 
 # Vendor directory
 vendor/
