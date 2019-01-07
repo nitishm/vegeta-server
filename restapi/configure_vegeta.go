@@ -4,11 +4,16 @@ package restapi
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
+	"os"
+
+	rtime "runtime"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 
 	"vegeta-server/internal/vegeta"
 	"vegeta-server/models"
@@ -18,13 +23,47 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	commit  = "N/A"
+	date    = "N/A"
+	version = "N/A"
+)
+
 //go:generate swagger generate server --target ../../vegeta-server --name Vegeta --spec ../spec/swagger.yaml
+type VersionFlag struct {
+	Version bool `long:"version" description:"Show vegeta-server version details"`
+}
 
 func configureFlags(api *operations.VegetaAPI) {
-	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	var vFlags = VersionFlag{}
+
+	api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{
+		swag.CommandLineOptionsGroup{
+			ShortDescription: "Version",
+			LongDescription:  "",
+			Options:          &vFlags,
+		},
+	}
 }
 
 func configureAPI(api *operations.VegetaAPI) http.Handler {
+	// FIXME: Find a better way to do this ?
+	// Print version info if --version flag is set
+	if vf, ok := api.CommandLineOptionsGroups[0].Options.(*VersionFlag); ok {
+		if vf.Version {
+			// Set at linking time
+			fmt.Println("=======")
+			fmt.Println("VERSION")
+			fmt.Println("=======")
+			fmt.Println("Version\t", version)
+			fmt.Println("Commit \t", commit)
+			fmt.Println("Runtime\t", fmt.Sprintf("%s %s/%s", rtime.Version(), rtime.GOOS, rtime.GOARCH))
+			fmt.Println("Date   \t", date)
+
+			os.Exit(0)
+		}
+	}
+
 	// Initialize the attacker
 	at := vegeta.NewAttacker()
 

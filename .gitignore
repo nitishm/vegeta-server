@@ -18,3 +18,6 @@ vendor/
 
 # Built binaries
 bin/
+
+# IDE specific
+launch.json

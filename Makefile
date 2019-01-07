@@ -1,4 +1,3 @@
-
 COMMIT=$(shell git rev-parse HEAD)
 VERSION=$(shell git describe --tags --exact-match --always)
 DATE=$(shell date +'%FT%TZ%z')
@@ -7,8 +6,8 @@ GO  = GO111MODULE=on go
 all: fmt lint build test
 
 build: deps fmt
-	CGO_ENABLED=0 ${GO} build -v -a -tags=netgo \
-		-ldflags '-s -w -extldflags "-static" -X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)' -o bin/vegeta-server
+	CGO_ENABLED=0 ${GO} build -v -o bin/vegeta-server -a -tags=netgo \
+		-ldflags '-s -w -extldflags "-static" -X vegeta-server/restapi.version=$(VERSION) -X vegeta-server/restapi.commit=$(COMMIT) -X vegeta-server/restapi.date=$(DATE)' 
 
 clean:
 	rm -f coverage.txt
