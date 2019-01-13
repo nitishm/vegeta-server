@@ -8,14 +8,12 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
-type AttackFunc func(*AttackOpts) chan struct{}
+type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
 
-func DefaultAttackFunc(opts *AttackOpts) chan struct{} {
-	done := make(chan struct{})
-	time.AfterFunc(time.Second*15, func() {
-		done <- struct{}{}
-	})
-	return done
+func DefaultAttackFunc(opts *AttackOpts) <-chan *vegeta.Result {
+	atk := vegeta.NewAttacker()
+	tr := vegeta.NewStaticTargeter(opts.Target)
+	return atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
 }
 
 type headers struct{ http.Header }
@@ -24,6 +22,7 @@ type csl []string
 
 // AttackOpts aggregates the attack function command options
 type AttackOpts struct {
+	Target      vegeta.Target
 	Name        string
 	Body        string
 	Cert        string

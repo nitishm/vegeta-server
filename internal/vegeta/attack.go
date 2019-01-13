@@ -1,6 +1,7 @@
 package vegeta
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"sync"
@@ -11,7 +12,7 @@ import (
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	vegetalib "github.com/tsenart/vegeta/lib"
 )
 
@@ -20,7 +21,8 @@ type attackContext struct {
 	cancelFn context.CancelFunc
 }
 type attackEntry struct {
-	ctx    attackContext
+	ctx attackContext
+
 	uuid   string
 	status string
 }
@@ -37,12 +39,12 @@ func (ae *attackEntry) Schedule(params interface{}) error {
 	}
 
 	log.WithField("UUID", ae.uuid).Info("Scheduled")
-
-	time.AfterFunc(time.Second*5, func() {
-		_ = ae.Run(params)
-	})
-
 	ae.status = models.AttackResponseStatusScheduled
+
+	// TODO: Create a scheduler that is smart enough to schedule
+	//attacks when there are enough resources avaialable
+	_ = ae.Run(params)
+
 	return nil
 }
 
@@ -149,23 +151,23 @@ func (at *Attacker) Schedule(params interface{}) string {
 func (at *Attacker) Status(uuid string) (string, error) {
 	at.lock.RLock()
 	defer at.lock.RUnlock()
-	if entry, ok := at.scheduler[uuid]; !ok {
+	entry, ok := at.scheduler[uuid]
+	if !ok {
 		return "", fmt.Errorf("attack reference %s not found", uuid)
-	} else {
-		return entry.Status(), nil
 	}
+	return entry.Status(), nil
 }
 
 // Cancel an attack by its ID
 func (at *Attacker) Cancel(uuid string, cancel bool) (string, error) {
 	at.lock.Lock()
 	defer at.lock.Unlock()
-	if entry, ok := at.scheduler[uuid]; !ok {
+	entry, ok := at.scheduler[uuid]
+	if !ok {
 		return "", fmt.Errorf("attack reference %s not found", uuid)
-	} else {
-		err := entry.Cancel()
-		return entry.Status(), err
 	}
+	err := entry.Cancel()
+	return entry.Status(), err
 }
 
 func (at *Attacker) startAttackHandler() {
@@ -201,11 +203,13 @@ func (at *Attacker) startAttackHandler() {
 func convertParamsToAttackOpts(name string, params interface{}) *vegeta.AttackOpts {
 	switch p := params.(type) {
 	case *models.Attack:
-		opts := &vegeta.AttackOpts{}
-		opts.Name = name
-		opts.Rate = vegetalib.Rate{Freq: int(*p.Rate), Per: time.Second}
-		opts.Duration = time.Duration(*p.Duration)
-		return nil
+		opts := &vegeta.AttackOpts{
+			Name:     name,
+			Rate:     vegetalib.Rate{Freq: int(*p.Rate), Per: time.Second},
+			Duration: time.Duration(*p.Duration),
+			Target:   vegetalib.Target{Method: *p.Target.Method, URL: p.Target.URL},
+		}
+		return opts
 	default:
 		return nil
 	}
@@ -213,16 +217,31 @@ func convertParamsToAttackOpts(name string, params interface{}) *vegeta.AttackOp
 
 func attackHandler(entry *attackEntry, opts *vegeta.AttackOpts, fn vegeta.AttackFunc) {
 	result := fn(opts)
-
-	select {
-	case <-result:
-		err := entry.Complete()
-		if err != nil {
-			log.WithError(err).Error("Failed to Complete")
-			_ = entry.Fail()
+	buf := bytes.NewBuffer(nil)
+	enc := vegetalib.NewEncoder(buf)
+loop:
+	for {
+		select {
+		case r, ok := <-result:
+			if !ok {
+				break loop
+			}
+			if err := enc.Encode(r); err != nil {
+				err := entry.Fail()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		case <-entry.ctx.Done():
+			log.Warnf("Attack %s was canceled", entry.uuid)
+			break loop
 		}
-	case <-entry.ctx.Done():
-		log.Warnf("Attack %s was canceled", entry.uuid)
-		break
+	}
+
+	// Mark attack as completed
+	err := entry.Complete()
+	if err != nil {
+		log.WithError(err).Error("Failed to Complete")
+		_ = entry.Fail()
 	}
 }

@@ -21,3 +21,5 @@ bin/
 
 # IDE specific
 launch.json
+.idea/
+.vscode/

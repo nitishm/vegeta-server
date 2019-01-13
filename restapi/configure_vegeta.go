@@ -38,7 +38,7 @@ func configureFlags(api *operations.VegetaAPI) {
 	var vFlags = VersionFlag{}
 
 	api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{
-		swag.CommandLineOptionsGroup{
+		{
 			ShortDescription: "Version",
 			LongDescription:  "",
 			Options:          &vFlags,
