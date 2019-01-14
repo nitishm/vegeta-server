@@ -25,6 +25,8 @@ type attackEntry struct {
 
 	uuid   string
 	status string
+
+	resCh chan<- *Result
 }
 
 // Status returns the attack status
@@ -109,6 +111,10 @@ type attackCmd struct {
 type AttackIntf interface {
 	Schedule(interface{}) string
 	Status(string) (string, error)
+	Cancel(string, bool) (string, error)
+
+	Exists(string) bool
+	List() map[string]string
 }
 
 // Attacker implements the AttackIntf
@@ -117,6 +123,8 @@ type Attacker struct {
 	lock      sync.RWMutex
 	scheduler map[string]*attackEntry
 	quit      chan struct{}
+
+	Results chan *Result
 }
 
 // NewAttacker returns an instance of a new attacker.
@@ -125,6 +133,7 @@ func NewAttacker() *Attacker {
 		scheduler: make(map[string]*attackEntry),
 		ch:        make(chan attackCmd),
 		quit:      make(chan struct{}),
+		Results:   make(chan *Result),
 	}
 
 	go at.startAttackHandler()
@@ -170,6 +179,22 @@ func (at *Attacker) Cancel(uuid string, cancel bool) (string, error) {
 	return entry.Status(), err
 }
 
+func (at *Attacker) Exists(uuid string) bool {
+	_, ok := at.scheduler[uuid]
+	return ok
+}
+
+func (at *Attacker) List() map[string]string {
+	at.lock.RLock()
+	defer at.lock.RUnlock()
+
+	m := make(map[string]string)
+	for uuid, entry := range at.scheduler {
+		m[uuid] = entry.Status()
+	}
+	return m
+}
+
 func (at *Attacker) startAttackHandler() {
 	fmt.Println("Starting Attack Handlers")
 	for {
@@ -178,13 +203,14 @@ func (at *Attacker) startAttackHandler() {
 			ctx := context.Background()
 			ctx, cancel := context.WithCancel(ctx)
 
-			// Create an entry in the attack database
-			at.lock.Lock()
 			entry := &attackEntry{
-				ctx:  attackContext{ctx, cancel},
-				uuid: cmd.uuid,
+				ctx:   attackContext{ctx, cancel},
+				uuid:  cmd.uuid,
+				resCh: at.Results,
 			}
 
+			// Create an entry in the attack database
+			at.lock.Lock()
 			at.scheduler[cmd.uuid] = entry
 			// Mark attack as Scheduled
 			err := entry.Schedule(cmd.params)
@@ -236,6 +262,12 @@ loop:
 			log.Warnf("Attack %s was canceled", entry.uuid)
 			break loop
 		}
+	}
+
+	// Write results to reporter channel
+	entry.resCh <- &Result{
+		entry.uuid,
+		buf,
 	}
 
 	// Mark attack as completed

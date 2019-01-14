@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-
 	rtime "runtime"
+	"vegeta-server/restapi/operations/report"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
 	"vegeta-server/internal/vegeta"
@@ -67,6 +67,9 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 	// Initialize the attacker
 	at := vegeta.NewAttacker()
 
+	// Initialize the reporter with the attack results channel
+	rp := vegeta.NewReporter(at.Results)
+
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -77,6 +80,13 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.AttackGetAttackByIDHandler = attack.GetAttackByIDHandlerFunc(func(params attack.GetAttackByIDParams) middleware.Responder {
+		if !at.Exists(params.AttackID) {
+			code := http.StatusText(http.StatusNotFound)
+			message := fmt.Sprintf("Attack by ID %v Not Found", params.AttackID)
+			e := &models.Error{Code: &code, Message: &message}
+			return attack.NewGetAttackByIDNotFound().WithPayload(e)
+		}
+
 		status, err := at.Status(params.AttackID)
 		if err != nil {
 			code := http.StatusText(http.StatusInternalServerError)
@@ -90,9 +100,20 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 			Status: status,
 		})
 	})
+
 	api.AttackGetAttacksHandler = attack.GetAttacksHandlerFunc(func(params attack.GetAttacksParams) middleware.Responder {
-		return middleware.NotImplemented("operation attack.GetAttacks has not yet been implemented")
+		var attackResponseList models.AttackResponseList
+		attacks := at.List()
+		for uuid, status := range attacks {
+			attackResponse := models.AttackResponse{
+				ID:     uuid,
+				Status: status,
+			}
+			attackResponseList = append(attackResponseList, &attackResponse)
+		}
+		return attack.NewGetAttacksOK().WithPayload(attackResponseList)
 	})
+
 	api.AttackPostAttackHandler = attack.PostAttackHandlerFunc(func(params attack.PostAttackParams) middleware.Responder {
 		attackID := at.Schedule(params.Body)
 		return attack.NewPostAttackOK().WithPayload(&models.AttackResponse{
@@ -100,7 +121,15 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 			Status: models.AttackResponseStatusScheduled,
 		})
 	})
+
 	api.AttackPutAttackByIDCancelHandler = attack.PutAttackByIDCancelHandlerFunc(func(params attack.PutAttackByIDCancelParams) middleware.Responder {
+		if !at.Exists(params.AttackID) {
+			code := http.StatusText(http.StatusNotFound)
+			message := fmt.Sprintf("Attack by ID %v Not Found", params.AttackID)
+			e := &models.Error{Code: &code, Message: &message}
+			return attack.NewPutAttackByIDCancelNotFound().WithPayload(e)
+		}
+
 		status, err := at.Cancel(params.AttackID, *params.Body.IsCanceled)
 		if err != nil {
 			code := http.StatusText(http.StatusInternalServerError)
@@ -114,6 +143,42 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 			Status: status,
 		})
 	})
+
+	api.ReportGetReportByIDHandler = report.GetReportByIDHandlerFunc(func(params report.GetReportByIDParams) middleware.Responder {
+		if !at.Exists(params.AttackID) {
+			code := http.StatusText(http.StatusNotFound)
+			message := fmt.Sprintf("Attack by ID %v Not Found", params.AttackID)
+			e := &models.Error{Code: &code, Message: &message}
+			return report.NewGetReportByIDNotFound().WithPayload(e)
+		}
+
+		r, err := rp.Get(params.AttackID)
+		if err != nil {
+			code := http.StatusText(http.StatusInternalServerError)
+			message := err.Error()
+			e := &models.Error{Code: &code, Message: &message}
+			return report.NewGetReportByIDInternalServerError().WithPayload(e)
+		}
+
+		return report.NewGetReportByIDOK().WithPayload(&models.ReportResponse{
+			ID:     params.AttackID,
+			Report: r,
+		})
+	})
+
+	api.ReportGetReportsHandler = report.GetReportsHandlerFunc(func(params report.GetReportsParams) middleware.Responder {
+		var reportResponseList models.ReportResponseList
+		reports := rp.List()
+		for uuid, rep := range reports {
+			reportResponse := models.ReportResponse{
+				ID:     uuid,
+				Report: rep,
+			}
+			reportResponseList = append(reportResponseList, &reportResponse)
+		}
+		return report.NewGetReportsOK().WithPayload(reportResponseList)
+	})
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

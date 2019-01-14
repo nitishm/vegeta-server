@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"vegeta-server/restapi/operations/attack"
+	"vegeta-server/restapi/operations/report"
 )
 
 // NewVegetaAPI creates a new Vegeta instance
@@ -44,6 +45,12 @@ func NewVegetaAPI(spec *loads.Document) *VegetaAPI {
 		}),
 		AttackGetAttacksHandler: attack.GetAttacksHandlerFunc(func(params attack.GetAttacksParams) middleware.Responder {
 			return middleware.NotImplemented("operation AttackGetAttacks has not yet been implemented")
+		}),
+		ReportGetReportByIDHandler: report.GetReportByIDHandlerFunc(func(params report.GetReportByIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation ReportGetReportByID has not yet been implemented")
+		}),
+		ReportGetReportsHandler: report.GetReportsHandlerFunc(func(params report.GetReportsParams) middleware.Responder {
+			return middleware.NotImplemented("operation ReportGetReports has not yet been implemented")
 		}),
 		AttackPostAttackHandler: attack.PostAttackHandlerFunc(func(params attack.PostAttackParams) middleware.Responder {
 			return middleware.NotImplemented("operation AttackPostAttack has not yet been implemented")
@@ -87,6 +94,10 @@ type VegetaAPI struct {
 	AttackGetAttackByIDHandler attack.GetAttackByIDHandler
 	// AttackGetAttacksHandler sets the operation handler for the get attacks operation
 	AttackGetAttacksHandler attack.GetAttacksHandler
+	// ReportGetReportByIDHandler sets the operation handler for the get report by ID operation
+	ReportGetReportByIDHandler report.GetReportByIDHandler
+	// ReportGetReportsHandler sets the operation handler for the get reports operation
+	ReportGetReportsHandler report.GetReportsHandler
 	// AttackPostAttackHandler sets the operation handler for the post attack operation
 	AttackPostAttackHandler attack.PostAttackHandler
 	// AttackPutAttackByIDCancelHandler sets the operation handler for the put attack by ID cancel operation
@@ -160,6 +171,14 @@ func (o *VegetaAPI) Validate() error {
 
 	if o.AttackGetAttacksHandler == nil {
 		unregistered = append(unregistered, "attack.GetAttacksHandler")
+	}
+
+	if o.ReportGetReportByIDHandler == nil {
+		unregistered = append(unregistered, "report.GetReportByIDHandler")
+	}
+
+	if o.ReportGetReportsHandler == nil {
+		unregistered = append(unregistered, "report.GetReportsHandler")
 	}
 
 	if o.AttackPostAttackHandler == nil {
@@ -277,6 +296,16 @@ func (o *VegetaAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/attack"] = attack.NewGetAttacks(o.context, o.AttackGetAttacksHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/report/{attackID}"] = report.NewGetReportByID(o.context, o.ReportGetReportByIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/report"] = report.NewGetReports(o.context, o.ReportGetReportsHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

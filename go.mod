@@ -2,6 +2,7 @@ module vegeta-server
 
 require (
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae // indirect
+	github.com/davecgh/go-spew v1.1.1
 	github.com/go-openapi/errors v0.18.0
 	github.com/go-openapi/loads v0.18.0
 	github.com/go-openapi/runtime v0.18.0

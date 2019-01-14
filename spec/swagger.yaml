@@ -64,7 +64,7 @@ paths:
       parameters:
         - in: path
           name: attackID
-          description: Attack ID 
+          description: Attack ID
           required: true
           type: string
       responses:
@@ -93,7 +93,7 @@ paths:
       parameters:
         - in: path
           name: attackID
-          description: Attack ID 
+          description: Attack ID
           required: true
           type: string
         - description: Cancel specification object
@@ -119,6 +119,46 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/Error'
+  '/report':
+    get:
+      summary: Get a list of all reports
+      tags:
+        - report
+      operationId: getReports
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ReportResponseList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+  '/report/{attackID}':
+    get:
+      summary: Get an attack report by  ID
+      tags:
+        - report
+      operationId: getReportByID
+      parameters:
+        - in: path
+          name: attackID
+          description: Attack ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ReportResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
 definitions:
   Attack:
     properties:
@@ -135,7 +175,7 @@ definitions:
       duration:
         description: Duration of the test
         example: 10s
-        format: duration 
+        format: duration
         type: string
       h2c:
         default: true
@@ -172,7 +212,7 @@ definitions:
         description: 'Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.'
         example: 50
         format: int
-        type: integer 
+        type: integer
       redirects:
         description: 'Specifies the max number of redirects followed on each request. The default is 10. When the value is -1, redirects are not followed but the response is marked as successful.'
         format: int
@@ -225,6 +265,21 @@ definitions:
     items:
       $ref: '#/definitions/AttackResponse'
     type: array
+  ReportResponse:
+    properties:
+      id:
+        description: The attack ID used to fetch status and reports.
+        type: string
+        example: "b9ffc008-b5a3-4407-a7b8-c7e8fff24ce2"
+      report:
+        description: The report json string
+        type: string
+        example: {"latencies":{"total":18993913,"mean":1899391,"50th":280306,"95th":15894691,"99th":15894691,"max":15894691},"bytes_in":{"total":450,"mean":45},"bytes_out":{"total":0,"mean":0},"earliest":"2019-01-13T18:23:22.925924-05:00","latest":"2019-01-13T18:23:24.708443-05:00","end":"2019-01-13T18:23:24.709388403-05:00","duration":1782519000,"wait":945403,"requests":10,"rate":5.610038378272546,"success":0,"status_codes":{"404":10},"errors":["404 Not Found"]}
+    type: object
+  ReportResponseList:
+    items:
+      $ref: '#/definitions/ReportResponse'
+    type: array
   Target:
     properties:
       url:
@@ -249,7 +304,7 @@ definitions:
     type: object
   Cancel:
     properties:
-      isCanceled:       
+      isCanceled:
         description: The attack cancel object
         type: boolean
     required:
@@ -286,6 +341,6 @@ x-components:
       schema:
         $ref: '#/definitions/Cancel'
 schemes:
- - https
- - http
+  - https
+  - http
 basePath: /api/v1

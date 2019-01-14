@@ -189,6 +189,67 @@ func init() {
           }
         }
       }
+    },
+    "/report": {
+      "get": {
+        "tags": [
+          "report"
+        ],
+        "summary": "Get a list of all reports",
+        "operationId": "getReports",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ReportResponseList"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/report/{attackID}": {
+      "get": {
+        "tags": [
+          "report"
+        ],
+        "summary": "Get an attack report by  ID",
+        "operationId": "getReportByID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Attack ID",
+            "name": "attackID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ReportResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -352,6 +413,58 @@ func init() {
         "message": {
           "type": "string"
         }
+      }
+    },
+    "ReportResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The attack ID used to fetch status and reports.",
+          "type": "string",
+          "example": "b9ffc008-b5a3-4407-a7b8-c7e8fff24ce2"
+        },
+        "report": {
+          "description": "The report json string",
+          "type": "string",
+          "example": {
+            "bytes_in": {
+              "mean": 45,
+              "total": 450
+            },
+            "bytes_out": {
+              "mean": 0,
+              "total": 0
+            },
+            "duration": 1782519000,
+            "earliest": "2019-01-13T18:23:22.925924-05:00",
+            "end": "2019-01-13T18:23:24.709388403-05:00",
+            "errors": [
+              "404 Not Found"
+            ],
+            "latencies": {
+              "50th": 280306,
+              "95th": 15894691,
+              "99th": 15894691,
+              "max": 15894691,
+              "mean": 1899391,
+              "total": 18993913
+            },
+            "latest": "2019-01-13T18:23:24.708443-05:00",
+            "rate": 5.610038378272546,
+            "requests": 10,
+            "status_codes": {
+              "404": 10
+            },
+            "success": 0,
+            "wait": 945403
+          }
+        }
+      }
+    },
+    "ReportResponseList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ReportResponse"
       }
     },
     "Target": {
@@ -589,6 +702,67 @@ func init() {
           }
         }
       }
+    },
+    "/report": {
+      "get": {
+        "tags": [
+          "report"
+        ],
+        "summary": "Get a list of all reports",
+        "operationId": "getReports",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ReportResponseList"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/report/{attackID}": {
+      "get": {
+        "tags": [
+          "report"
+        ],
+        "summary": "Get an attack report by  ID",
+        "operationId": "getReportByID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Attack ID",
+            "name": "attackID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ReportResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -752,6 +926,58 @@ func init() {
         "message": {
           "type": "string"
         }
+      }
+    },
+    "ReportResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The attack ID used to fetch status and reports.",
+          "type": "string",
+          "example": "b9ffc008-b5a3-4407-a7b8-c7e8fff24ce2"
+        },
+        "report": {
+          "description": "The report json string",
+          "type": "string",
+          "example": {
+            "bytes_in": {
+              "mean": 45,
+              "total": 450
+            },
+            "bytes_out": {
+              "mean": 0,
+              "total": 0
+            },
+            "duration": 1782519000,
+            "earliest": "2019-01-13T18:23:22.925924-05:00",
+            "end": "2019-01-13T18:23:24.709388403-05:00",
+            "errors": [
+              "404 Not Found"
+            ],
+            "latencies": {
+              "50th": 280306,
+              "95th": 15894691,
+              "99th": 15894691,
+              "max": 15894691,
+              "mean": 1899391,
+              "total": 18993913
+            },
+            "latest": "2019-01-13T18:23:24.708443-05:00",
+            "rate": 5.610038378272546,
+            "requests": 10,
+            "status_codes": {
+              "404": 10
+            },
+            "success": 0,
+            "wait": 945403
+          }
+        }
+      }
+    },
+    "ReportResponseList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ReportResponse"
       }
     },
     "Target": {
