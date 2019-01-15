@@ -1,8 +1,8 @@
 module vegeta-server
 
 require (
-	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae // indirect
-	github.com/davecgh/go-spew v1.1.1
+	github.com/bmizerany/perks v0.0.0-20141205001514-d9a9656a3a4b // indirect
+	github.com/dgryski/go-gk v0.0.0-20140819190930-201884a44051 // indirect
 	github.com/go-openapi/errors v0.18.0
 	github.com/go-openapi/loads v0.18.0
 	github.com/go-openapi/runtime v0.18.0
@@ -14,12 +14,14 @@ require (
 	github.com/gordonklaus/ineffassign v0.0.0-20180909121442-1003c8bd00dc // indirect
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9 // indirect
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/mattn/goveralls v0.0.2 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/sirupsen/logrus v1.2.0
-	github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3 // indirect
+	github.com/sirupsen/logrus v1.3.0
+	github.com/streadway/quantile v0.0.0-20150917103942-b0c588724d25 // indirect
+	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tsenart/vegeta v12.1.0+incompatible
+	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc // indirect
 	golang.org/x/lint v0.0.0-20181217174547-8f45f776aaf1 // indirect
-	golang.org/x/net v0.0.0-20181220203305-927f97764cc3
-	golang.org/x/tools v0.0.0-20190104173342-9ea1c200b25e // indirect
+	golang.org/x/net v0.0.0-20190110200230-915654e7eabc
+	golang.org/x/sys v0.0.0-20190114130336-2be517255631 // indirect
 )
