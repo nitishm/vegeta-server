@@ -12,6 +12,7 @@ env:
 install: true
 
 before_script:
+  - make update-deps
   - make install
 
 script:

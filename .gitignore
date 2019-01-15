@@ -14,7 +14,6 @@ coverage.txt
 profile.cov
 
 # Vendor directory
-go.sum
 vendor/
 
 # Built binaries

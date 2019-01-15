@@ -17,6 +17,12 @@ deps:
 	${GO} mod vendor
 	${GO} mod download
 
+update-deps:
+	${GO} mod verify
+	${GO} mod tidy
+	rm -rf vendor
+	${GO} mod vendor
+
 install:
 	$(shell ./scripts/make-install.sh)
 
@@ -41,4 +47,4 @@ ineffassign:
 run: build
 	$(shell bin/vegeta-server --scheme=http --host=localhost --port=8000)
 
-.PHONY: all build clean deps install swagger test fmt validate lint ineffassign run
+.PHONY: all build clean deps update-deps install swagger test fmt validate lint ineffassign run
