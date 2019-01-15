@@ -12,11 +12,7 @@ env:
 install: true
 
 before_script:
-  - go get golang.org/x/lint/golint
-  - go get github.com/golangci/golangci-lint/cmd/golangci-lint
-  - go get github.com/gordonklaus/ineffassign
-  - go get golang.org/x/tools/cmd/cover
-  - go get github.com/mattn/goveralls
+  - make install
 
 script:
   - diff -u <(echo -n) <(gofmt -d .)
