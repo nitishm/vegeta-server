@@ -148,9 +148,9 @@ You can get these now with: go get -u -f ./...
 3. [`configure_vegeta.go`](https://github.com/nitishm/vegeta-server/blob/master/restapi/configure_vegeta.go) :
   API handlers that utilize the `internal` and `pkg` packages.
   
-## Roadmap
+## Road-map
 
-*TODO*
+Link to [road-map](https://github.com/nitishm/vegeta-server/projects/1)
 
 ## License
 
