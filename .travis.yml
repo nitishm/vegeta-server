@@ -16,7 +16,6 @@ before_script:
   - make install
 
 script:
-  - diff -u <(echo -n) <(gofmt -d .)
   - make lint
   - make validate
   - make ineffassign

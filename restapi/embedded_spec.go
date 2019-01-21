@@ -415,6 +415,111 @@ func init() {
         }
       }
     },
+    "Report": {
+      "type": "object",
+      "properties": {
+        "bytes_in": {
+          "type": "object",
+          "properties": {
+            "mean": {
+              "type": "integer",
+              "format": "int64",
+              "example": 45
+            },
+            "total": {
+              "type": "integer",
+              "format": "int64",
+              "example": 2250
+            }
+          }
+        },
+        "bytes_out": {
+          "type": "object",
+          "properties": {
+            "mean": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "total": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "duration": {
+          "type": "integer",
+          "format": "int64",
+          "example": 9802013000
+        },
+        "earliest": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "404 Not Found"
+          }
+        },
+        "latencies": {
+          "type": "object",
+          "properties": {
+            "50th": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "95th": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "99th": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "max": {
+              "type": "integer",
+              "format": "int"
+            },
+            "mean": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "total": {
+              "type": "integer",
+              "format": "uint64"
+            }
+          }
+        },
+        "latest": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rate": {
+          "type": "number",
+          "example": 5.1009930307172615
+        },
+        "requests": {
+          "type": "integer",
+          "format": "int64",
+          "example": 50
+        },
+        "success": {
+          "type": "integer",
+          "format": "int",
+          "example": 4
+        },
+        "wait": {
+          "type": "integer",
+          "format": "int64",
+          "example": 372388
+        }
+      }
+    },
     "ReportResponse": {
       "type": "object",
       "properties": {
@@ -424,40 +529,7 @@ func init() {
           "example": "b9ffc008-b5a3-4407-a7b8-c7e8fff24ce2"
         },
         "report": {
-          "description": "The report json string",
-          "type": "string",
-          "example": {
-            "bytes_in": {
-              "mean": 45,
-              "total": 450
-            },
-            "bytes_out": {
-              "mean": 0,
-              "total": 0
-            },
-            "duration": 1782519000,
-            "earliest": "2019-01-13T18:23:22.925924-05:00",
-            "end": "2019-01-13T18:23:24.709388403-05:00",
-            "errors": [
-              "404 Not Found"
-            ],
-            "latencies": {
-              "50th": 280306,
-              "95th": 15894691,
-              "99th": 15894691,
-              "max": 15894691,
-              "mean": 1899391,
-              "total": 18993913
-            },
-            "latest": "2019-01-13T18:23:24.708443-05:00",
-            "rate": 5.610038378272546,
-            "requests": 10,
-            "status_codes": {
-              "404": 10
-            },
-            "success": 0,
-            "wait": 945403
-          }
+          "$ref": "#/definitions/Report"
         }
       }
     },
@@ -928,6 +1000,111 @@ func init() {
         }
       }
     },
+    "Report": {
+      "type": "object",
+      "properties": {
+        "bytes_in": {
+          "type": "object",
+          "properties": {
+            "mean": {
+              "type": "integer",
+              "format": "int64",
+              "example": 45
+            },
+            "total": {
+              "type": "integer",
+              "format": "int64",
+              "example": 2250
+            }
+          }
+        },
+        "bytes_out": {
+          "type": "object",
+          "properties": {
+            "mean": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "total": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "duration": {
+          "type": "integer",
+          "format": "int64",
+          "example": 9802013000
+        },
+        "earliest": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "404 Not Found"
+          }
+        },
+        "latencies": {
+          "type": "object",
+          "properties": {
+            "50th": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "95th": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "99th": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "max": {
+              "type": "integer",
+              "format": "int"
+            },
+            "mean": {
+              "type": "integer",
+              "format": "uint64"
+            },
+            "total": {
+              "type": "integer",
+              "format": "uint64"
+            }
+          }
+        },
+        "latest": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rate": {
+          "type": "number",
+          "example": 5.1009930307172615
+        },
+        "requests": {
+          "type": "integer",
+          "format": "int64",
+          "example": 50
+        },
+        "success": {
+          "type": "integer",
+          "format": "int",
+          "example": 4
+        },
+        "wait": {
+          "type": "integer",
+          "format": "int64",
+          "example": 372388
+        }
+      }
+    },
     "ReportResponse": {
       "type": "object",
       "properties": {
@@ -937,40 +1114,7 @@ func init() {
           "example": "b9ffc008-b5a3-4407-a7b8-c7e8fff24ce2"
         },
         "report": {
-          "description": "The report json string",
-          "type": "string",
-          "example": {
-            "bytes_in": {
-              "mean": 45,
-              "total": 450
-            },
-            "bytes_out": {
-              "mean": 0,
-              "total": 0
-            },
-            "duration": 1782519000,
-            "earliest": "2019-01-13T18:23:22.925924-05:00",
-            "end": "2019-01-13T18:23:24.709388403-05:00",
-            "errors": [
-              "404 Not Found"
-            ],
-            "latencies": {
-              "50th": 280306,
-              "95th": 15894691,
-              "99th": 15894691,
-              "max": 15894691,
-              "mean": 1899391,
-              "total": 18993913
-            },
-            "latest": "2019-01-13T18:23:24.708443-05:00",
-            "rate": 5.610038378272546,
-            "requests": 10,
-            "status_codes": {
-              "404": 10
-            },
-            "success": 0,
-            "wait": 945403
-          }
+          "$ref": "#/definitions/Report"
         }
       }
     },

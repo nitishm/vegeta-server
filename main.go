@@ -24,7 +24,9 @@ func main() {
 
 	parser := goflags.NewParser(server, goflags.Default)
 	parser.ShortDescription = "Vegeta REST API"
-	parser.LongDescription = "This is a RESTful API for the vegeta load-testing utility. Vegeta is a versatile HTTP load testing tool built out of a need to drill HTTP services with a constant request rate.\n"
+	parser.LongDescription = "This is a RESTful API for the vegeta load-testing utility. " +
+		"Vegeta is a versatile HTTP load testing tool built out of a need to drill HTTP " +
+		"services with a constant request rate.\n"
 
 	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
