@@ -36,15 +36,15 @@ func (ae *attackEntry) Status() string {
 
 // Schedule an attack and once scheduled invoke the Run method
 func (ae *attackEntry) Schedule(params interface{}) error {
-	if ae.status == models.AttackResponseStatusCanceled || ae.status == models.AttackResponseStatusRunning || ae.status == models.AttackResponseStatusCompleted {
-		return fmt.Errorf("Cannot schedule attack %s with status %v", ae.uuid, ae.status)
+	if ae.status == models.AttackResponseStatusCanceled || ae.status == models.AttackResponseStatusRunning || ae.status == models.AttackResponseStatusCompleted { //nolint:lll
+		return fmt.Errorf("cannot schedule attack %s with status %v", ae.uuid, ae.status)
 	}
 
 	log.WithField("UUID", ae.uuid).Info("Scheduled")
 	ae.status = models.AttackResponseStatusScheduled
 
 	// TODO: Create a scheduler that is smart enough to schedule
-	//attacks when there are enough resources avaialable
+	//attacks when there are enough resources available
 	_ = ae.Run(params)
 
 	return nil
@@ -53,7 +53,7 @@ func (ae *attackEntry) Schedule(params interface{}) error {
 // Run an attack against the target
 func (ae *attackEntry) Run(params interface{}) error {
 	if ae.status != models.AttackResponseStatusScheduled {
-		return fmt.Errorf("Cannot run attack %s with status %v", ae.uuid, ae.status)
+		return fmt.Errorf("cannot run attack %s with status %v", ae.uuid, ae.status)
 	}
 
 	log.WithField("UUID", ae.uuid).Info("Running")
@@ -69,7 +69,7 @@ func (ae *attackEntry) Run(params interface{}) error {
 // Complete marks the attack as completed
 func (ae *attackEntry) Complete() error {
 	if ae.status != models.AttackResponseStatusRunning {
-		return fmt.Errorf("Cannot mark attack %s completed when in status %v", ae.uuid, ae.status)
+		return fmt.Errorf("cannot mark attack %s completed when in status %v", ae.uuid, ae.status)
 	}
 	log.WithField("UUID", ae.uuid).Info("Completed")
 	ae.status = models.AttackResponseStatusCompleted
@@ -79,7 +79,7 @@ func (ae *attackEntry) Complete() error {
 // Cancel an attack and update the status as canceled
 func (ae *attackEntry) Cancel() error {
 	if ae.status == models.AttackResponseStatusCompleted || ae.status == models.AttackResponseStatusFailed {
-		return fmt.Errorf("Cannot cancel attack %s  with status %v", ae.uuid, ae.status)
+		return fmt.Errorf("cannot cancel attack %s  with status %v", ae.uuid, ae.status)
 	}
 	// Cancel the attack context
 	ae.ctx.cancelFn()

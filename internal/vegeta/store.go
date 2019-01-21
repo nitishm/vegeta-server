@@ -16,7 +16,7 @@ type ReportMap map[string]string
 
 func (r ReportMap) Add(uuid string, report string) error {
 	if r == nil {
-		return fmt.Errorf("Report Map has not been initialized")
+		return fmt.Errorf("report map has not been initialized")
 	}
 	r[uuid] = report
 
@@ -24,11 +24,12 @@ func (r ReportMap) Add(uuid string, report string) error {
 }
 
 func (r ReportMap) Get(uuid string) (string, error) {
-	if v, ok := r[uuid]; !ok {
-		return "", fmt.Errorf("No attack entry with UUID %v found in Report Map", uuid)
-	} else {
-		return v, nil
+	v, ok := r[uuid]
+	if !ok {
+		return "", fmt.Errorf("no attack entry with UUID %v found in report map", uuid)
 	}
+
+	return v, nil
 }
 
 func (r ReportMap) List() map[string]string {

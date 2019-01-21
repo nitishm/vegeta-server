@@ -47,6 +47,7 @@ func configureFlags(api *operations.VegetaAPI) {
 	}
 }
 
+//nolint:lll
 func configureAPI(api *operations.VegetaAPI) http.Handler {
 	// FIXME: Find a better way to do this ?
 	// Print version info if --version flag is set
@@ -161,9 +162,17 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 			return report.NewGetReportByIDInternalServerError().WithPayload(e)
 		}
 
+		rep, err := adaptReportToSpec(r)
+		if err != nil {
+			code := http.StatusText(http.StatusInternalServerError)
+			message := err.Error()
+			e := &models.Error{Code: &code, Message: &message}
+			return report.NewGetReportByIDInternalServerError().WithPayload(e)
+		}
+
 		return report.NewGetReportByIDOK().WithPayload(&models.ReportResponse{
 			ID:     params.AttackID,
-			Report: adaptReportToSpec(r),
+			Report: rep,
 		})
 	})
 
@@ -171,9 +180,15 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 		var reportResponseList models.ReportResponseList
 		reports := rp.List()
 		for uuid, rep := range reports {
+			report, err := adaptReportToSpec(rep)
+			if err != nil {
+				// FIXME: Should we just skip or panic if this happens ?
+				continue
+			}
+
 			reportResponse := models.ReportResponse{
 				ID:     uuid,
-				Report: adaptReportToSpec(rep),
+				Report: report,
 			}
 			reportResponseList = append(reportResponseList, &reportResponse)
 		}
@@ -203,14 +218,18 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
-// The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
+// The middleware configuration happens before anything, this middleware also
+// applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return handler
 }
 
-func adaptReportToSpec(r string) *models.Report {
+func adaptReportToSpec(r string) (*models.Report, error) {
 	report := &models.Report{}
-	json.Unmarshal([]byte(r), report)
-	return report
+	err := json.Unmarshal([]byte(r), report)
+	if err != nil {
+		return nil, err
+	}
+	return report, nil
 }
