@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -162,7 +163,7 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 
 		return report.NewGetReportByIDOK().WithPayload(&models.ReportResponse{
 			ID:     params.AttackID,
-			Report: r,
+			Report: adaptReportToSpec(r),
 		})
 	})
 
@@ -172,7 +173,7 @@ func configureAPI(api *operations.VegetaAPI) http.Handler {
 		for uuid, rep := range reports {
 			reportResponse := models.ReportResponse{
 				ID:     uuid,
-				Report: rep,
+				Report: adaptReportToSpec(rep),
 			}
 			reportResponseList = append(reportResponseList, &reportResponse)
 		}
@@ -206,4 +207,10 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return handler
+}
+
+func adaptReportToSpec(r string) *models.Report {
+	report := &models.Report{}
+	json.Unmarshal([]byte(r), report)
+	return report
 }

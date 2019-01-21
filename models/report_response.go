@@ -8,6 +8,7 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -18,12 +19,39 @@ type ReportResponse struct {
 	// The attack ID used to fetch status and reports.
 	ID string `json:"id,omitempty"`
 
-	// The report json string
-	Report string `json:"report,omitempty"`
+	// report
+	Report *Report `json:"report,omitempty"`
 }
 
 // Validate validates this report response
 func (m *ReportResponse) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReport(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ReportResponse) validateReport(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Report) { // not required
+		return nil
+	}
+
+	if m.Report != nil {
+		if err := m.Report.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("report")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

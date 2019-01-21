@@ -265,6 +265,98 @@ definitions:
     items:
       $ref: '#/definitions/AttackResponse'
     type: array
+  Report:
+    type: object
+    properties:
+      latencies:
+        type: object
+        properties:
+          total:
+            type: integer
+            format: uint64
+          mean:
+            type: integer
+            format: uint64
+          50th:
+            type: integer
+            format: uint64
+          95th:
+            type: integer
+            format: uint64
+          99th:
+            type: integer
+            format: uint64
+          max:
+            type: integer
+            format: int
+      bytes_in:
+        type: object
+        properties:
+          total:
+            type: integer
+            format: int64
+            example: 2250
+          mean:
+            type: integer
+            format: int64
+            example: 45
+      bytes_out:
+        type: object
+        properties:
+          total:
+            type: integer
+            format: int64
+          mean:
+            type: integer
+            format: int64
+      earliest:
+        type: string
+        format: date-time
+      latest:
+        type: string
+        format: date-time
+      end:
+        type: string
+        format: date-time
+      duration:
+        type: integer
+        format: int64
+        example: 9802013000
+      wait:
+        type: integer
+        format: int64
+        example: 372388
+      requests:
+        type: integer
+        format: int64
+        example: 50
+      rate:
+        type: number
+        example: 5.1009930307172615
+      success:
+        type: integer
+        format: int
+        example: 4
+#      statusCodes:
+#        type: object
+#        properties:
+#          200:
+#            type: integer
+#            format: int64
+#            example: 4
+#          400:
+#            type: integer
+#            format: int64
+#            example: 0
+#          404:
+#            type: integer
+#            format: int64
+#            example: 0
+      errors:
+        type: array
+        items:
+          type: string
+          example: "404 Not Found"
   ReportResponse:
     properties:
       id:
@@ -272,9 +364,7 @@ definitions:
         type: string
         example: "b9ffc008-b5a3-4407-a7b8-c7e8fff24ce2"
       report:
-        description: The report json string
-        type: string
-        example: {"latencies":{"total":18993913,"mean":1899391,"50th":280306,"95th":15894691,"99th":15894691,"max":15894691},"bytes_in":{"total":450,"mean":45},"bytes_out":{"total":0,"mean":0},"earliest":"2019-01-13T18:23:22.925924-05:00","latest":"2019-01-13T18:23:24.708443-05:00","end":"2019-01-13T18:23:24.709388403-05:00","duration":1782519000,"wait":945403,"requests":10,"rate":5.610038378272546,"success":0,"status_codes":{"404":10},"errors":["404 Not Found"]}
+        $ref: '#/definitions/Report'
     type: object
   ReportResponseList:
     items:
