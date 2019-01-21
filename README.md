@@ -83,6 +83,158 @@ Help Options:
 > INFO[0000] Serving vegeta at http://127.0.0.1:8000
 > ```
 
+### REST API Usage (`api/v1`)
+
+#### Submit an attack - `POST api/v1/attack`
+
+```
+curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://localhost:8000/api/v1/attack","scheme": "http"}}' http://localhost:8000/api/v1/attack
+```
+ 
+```
+{
+    "id":"d9788d4c-1bd7-48e9-92e4-f8d53603a483",
+    "status":"scheduled"
+}
+```
+*The returned JSON body includes the **Attack ID** (`d9788d4c-1bd7-48e9-92e4-f8d53603a483`) and the **Attack Status** (`scheduled`).*
+
+#### View attack status by **Attack ID** - `GET api/v1/attack/<attackID>`
+
+```
+curl http://localhost:8000/api/v1/attack/d9788d4c-1bd7-48e9-92e4-f8d53603a483
+```
+
+```
+{
+    "id": "d9788d4c-1bd7-48e9-92e4-f8d53603a483",
+    "status": "completed"
+}
+```
+
+#### List all attacks `GET /api/v1/attack`
+
+```
+curl http://localhost:8000/api/v1/attack/
+```
+
+```
+[
+    {
+        "id": "d9788d4c-1bd7-48e9-92e4-f8d53603a483",
+        "status": "completed"
+    },
+    {
+        "id": "8300c02f-4836-4458-b0a9-1493d8a32409",
+        "status": "completed"
+    }
+]
+```
+
+#### View attack report by **Attack ID** - `GET /api/v1/report/<attackID>`
+
+> The report endpoint only returns results for **Completed** attacks
+
+
+```
+curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483
+```
+
+```
+{
+    "id": "d9788d4c-1bd7-48e9-92e4-f8d53603a483",
+    "report": {
+        "bytes_in": {
+            "mean": 67,
+            "total": 1005
+        },
+        "bytes_out": {},
+        "duration": 2802988000,
+        "earliest": "2019-01-21T13:40:50.441-05:00",
+        "end": "2019-01-21T13:40:53.244-05:00",
+        "errors": [],
+        "latencies": {
+            "50th": 297520,
+            "95th": 991371,
+            "99th": 1211546,
+            "max": 1211546,
+            "mean": 350855,
+            "total": 5262839
+        },
+        "latest": "2019-01-21T13:40:53.244-05:00",
+        "rate": 5.3514321145862915,
+        "requests": 15,
+        "success": 1,
+        "wait": 315104
+    }
+}
+```
+
+#### List all attack reports - `GET api/v1/report`
+
+```
+curl http://localhost:8000/api/v1/report/
+```
+
+```
+[
+    {
+        "id": "d9788d4c-1bd7-48e9-92e4-f8d53603a483",
+        "report": {
+            "bytes_in": {
+                "mean": 67,
+                "total": 1005
+            },
+            "bytes_out": {},
+            "duration": 2802988000,
+            "earliest": "2019-01-21T13:40:50.441-05:00",
+            "end": "2019-01-21T13:40:53.244-05:00",
+            "errors": [],
+            "latencies": {
+                "50th": 297520,
+                "95th": 991371,
+                "99th": 1211546,
+                "max": 1211546,
+                "mean": 350855,
+                "total": 5262839
+            },
+            "latest": "2019-01-21T13:40:53.244-05:00",
+            "rate": 5.3514321145862915,
+            "requests": 15,
+            "success": 1,
+            "wait": 315104
+        }
+    },
+    {
+        "id": "8300c02f-4836-4458-b0a9-1493d8a32409",
+        "report": {
+            "bytes_in": {
+                "mean": 433,
+                "total": 216500
+            },
+            "bytes_out": {},
+            "duration": 9983230000,
+            "earliest": "2019-01-21T13:47:19.597-05:00",
+            "end": "2019-01-21T13:47:29.581-05:00",
+            "errors": [],
+            "latencies": {
+                "50th": 328599,
+                "95th": 546664,
+                "99th": 1148068,
+                "max": 3619612,
+                "mean": 368702,
+                "total": 184351113
+            },
+            "latest": "2019-01-21T13:47:29.580-05:00",
+            "rate": 50.08399085265991,
+            "requests": 500,
+            "success": 1,
+            "wait": 425382
+        }
+    }
+]
+```
+
 ### Running tests
 
 Tests can be run using the `Makefile` target `test`
