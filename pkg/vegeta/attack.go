@@ -2,7 +2,6 @@ package vegeta
 
 import (
 	"net"
-	"net/http"
 	"time"
 
 	vegeta "github.com/tsenart/vegeta/lib"
@@ -11,12 +10,21 @@ import (
 type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
 
 func DefaultAttackFunc(opts *AttackOpts) <-chan *vegeta.Result {
-	atk := vegeta.NewAttacker()
+
+	atk := vegeta.NewAttacker(
+		vegeta.Redirects(opts.Redirects),
+		vegeta.Timeout(opts.Timeout),
+		vegeta.Workers(opts.Workers),
+		vegeta.KeepAlive(opts.Keepalive),
+		vegeta.Connections(opts.Connections),
+		vegeta.HTTP2(opts.HTTP2),
+		vegeta.H2C(opts.H2c),
+		vegeta.MaxBody(opts.MaxBody),
+	)
 	tr := vegeta.NewStaticTargeter(opts.Target)
 	return atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
 }
 
-type headers struct{ http.Header }
 type localAddr struct{ *net.IPAddr }
 type csl []string
 
@@ -38,7 +46,6 @@ type AttackOpts struct {
 	Connections int
 	Redirects   int
 	MaxBody     int64
-	Headers     headers
 	Laddr       localAddr
 	Keepalive   bool
 	Resolvers   csl
