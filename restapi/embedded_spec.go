@@ -273,7 +273,7 @@ func init() {
         "connections": {
           "description": "Max open idle connections per target host",
           "type": "integer",
-          "format": "int32",
+          "format": "int",
           "default": 10000
         },
         "duration": {
@@ -291,12 +291,18 @@ func init() {
           "description": "Request headers as a string array.",
           "type": "array",
           "items": {
-            "type": "string"
-          },
-          "example": [
-            "Accept: text/html",
-            "Last-Modified: Sat, 29 Dec 2018 07:28:00 GMT"
-          ]
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "example": "Accept"
+              },
+              "value": {
+                "type": "string",
+                "example": "text/html"
+              }
+            }
+          }
         },
         "http2": {
           "description": "Send HTTP/2 requests when supported by the server",
@@ -323,8 +329,8 @@ func init() {
         },
         "max-body": {
           "description": "Specifies the maximum number of bytes to capture from the body of each response. Remaining unread bytes will be fully read but discarded. Set to -1 for no limit.",
-          "type": "string",
-          "example": "10M"
+          "type": "integer",
+          "format": "int"
         },
         "rate": {
           "description": "Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.",
@@ -858,7 +864,7 @@ func init() {
         "connections": {
           "description": "Max open idle connections per target host",
           "type": "integer",
-          "format": "int32",
+          "format": "int",
           "default": 10000
         },
         "duration": {
@@ -876,12 +882,18 @@ func init() {
           "description": "Request headers as a string array.",
           "type": "array",
           "items": {
-            "type": "string"
-          },
-          "example": [
-            "Accept: text/html",
-            "Last-Modified: Sat, 29 Dec 2018 07:28:00 GMT"
-          ]
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "example": "Accept"
+              },
+              "value": {
+                "type": "string",
+                "example": "text/html"
+              }
+            }
+          }
         },
         "http2": {
           "description": "Send HTTP/2 requests when supported by the server",
@@ -908,8 +920,8 @@ func init() {
         },
         "max-body": {
           "description": "Specifies the maximum number of bytes to capture from the body of each response. Remaining unread bytes will be fully read but discarded. Set to -1 for no limit.",
-          "type": "string",
-          "example": "10M"
+          "type": "integer",
+          "format": "int"
         },
         "rate": {
           "description": "Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.",

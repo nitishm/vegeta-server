@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -229,11 +231,57 @@ func (at *Attacker) startAttackHandler() {
 func convertParamsToAttackOpts(name string, params interface{}) *vegeta.AttackOpts {
 	switch p := params.(type) {
 	case *models.Attack:
+		// Set Rate
+		rate := vegetalib.Rate{Freq: int(*p.Rate), Per: time.Second}
+
+		// Set Duration
+		dur := time.Duration(*p.Duration)
+
+		// Set timeout
+		timeout, _ := time.ParseDuration(p.Timeout)
+
+		// Set target headers
+		var hdr http.Header
+		for _, h := range p.Headers {
+			hdr.Add(h.Key, h.Value)
+		}
+
+		// Set resolvers
+		resolvers := strings.Split(p.Resolvers, ",")
+
+		// TODO: Set Local Address
+
+		// TODO: Set TLS configuration
+
+		// TODO: Set target body
+
+		// Set Target
+		tgt := vegetalib.Target{
+			Method: *p.Target.Method,
+			URL:    p.Target.URL,
+			Header: hdr,
+		}
+
 		opts := &vegeta.AttackOpts{
-			Name:     name,
-			Rate:     vegetalib.Rate{Freq: int(*p.Rate), Per: time.Second},
-			Duration: time.Duration(*p.Duration),
-			Target:   vegetalib.Target{Method: *p.Target.Method, URL: p.Target.URL},
+			Name:      name,
+			Target:    tgt,
+			Insecure:  p.Insecure,
+			Duration:  dur,
+			Timeout:   timeout,
+			Rate:      rate,
+			Redirects: int(p.Redirects),
+			MaxBody:   p.MaxBody,
+			Keepalive: p.Keepalive,
+			Resolvers: resolvers,
+		}
+		if p.Http2 != nil {
+			opts.HTTP2 = *p.Http2
+		}
+		if p.H2c != nil {
+			opts.H2c = *p.H2c
+		}
+		if p.Workers != nil {
+			opts.Workers = uint64(*p.Workers)
 		}
 		return opts
 	default:

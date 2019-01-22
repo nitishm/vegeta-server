@@ -170,7 +170,7 @@ definitions:
       connections:
         default: 10000
         description: Max open idle connections per target host
-        format: int32
+        format: int
         type: integer
       duration:
         description: Duration of the test
@@ -183,11 +183,15 @@ definitions:
         type: boolean
       headers:
         description: Request headers as a string array.
-        example:
-          - 'Accept: text/html'
-          - 'Last-Modified: Sat, 29 Dec 2018 07:28:00 GMT'
         items:
-          type: string
+          type: object
+          properties:
+            key:
+              type: string
+              example: "Accept"
+            value: 
+              type: string
+              example: "text/html"
         type: array
       http2:
         default: true
@@ -205,8 +209,8 @@ definitions:
         type: string
       max-body:
         description: Specifies the maximum number of bytes to capture from the body of each response. Remaining unread bytes will be fully read but discarded. Set to -1 for no limit.
-        example: 10M
-        type: string
+        format: int
+        type: integer 
       rate:
         default: 50
         description: 'Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.'

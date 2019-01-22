@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -24,7 +26,7 @@ type Attack struct {
 	Cert string `json:"cert,omitempty"`
 
 	// Max open idle connections per target host
-	Connections *int32 `json:"connections,omitempty"`
+	Connections *int64 `json:"connections,omitempty"`
 
 	// Duration of the test
 	// Required: true
@@ -35,7 +37,7 @@ type Attack struct {
 	H2c *bool `json:"h2c,omitempty"`
 
 	// Request headers as a string array.
-	Headers []string `json:"headers"`
+	Headers []*AttackHeadersItems0 `json:"headers"`
 
 	// Send HTTP/2 requests when supported by the server
 	Http2 *bool `json:"http2,omitempty"`
@@ -54,7 +56,7 @@ type Attack struct {
 	Laddr strfmt.IPv4 `json:"laddr,omitempty"`
 
 	// Specifies the maximum number of bytes to capture from the body of each response. Remaining unread bytes will be fully read but discarded. Set to -1 for no limit.
-	MaxBody string `json:"max-body,omitempty"`
+	MaxBody int64 `json:"max-body,omitempty"`
 
 	// Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.
 	// Required: true
@@ -88,6 +90,10 @@ func (m *Attack) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateHeaders(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateLaddr(formats); err != nil {
 		res = append(res, err)
 	}
@@ -114,6 +120,31 @@ func (m *Attack) validateDuration(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("duration", "body", "duration", m.Duration.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Attack) validateHeaders(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Headers) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Headers); i++ {
+		if swag.IsZero(m.Headers[i]) { // not required
+			continue
+		}
+
+		if m.Headers[i] != nil {
+			if err := m.Headers[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("headers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -170,6 +201,40 @@ func (m *Attack) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Attack) UnmarshalBinary(b []byte) error {
 	var res Attack
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AttackHeadersItems0 attack headers items0
+// swagger:model AttackHeadersItems0
+type AttackHeadersItems0 struct {
+
+	// key
+	Key string `json:"key,omitempty"`
+
+	// value
+	Value string `json:"value,omitempty"`
+}
+
+// Validate validates this attack headers items0
+func (m *AttackHeadersItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AttackHeadersItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AttackHeadersItems0) UnmarshalBinary(b []byte) error {
+	var res AttackHeadersItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
