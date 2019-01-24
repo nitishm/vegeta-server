@@ -302,7 +302,9 @@ You can get these now with: go get -u -f ./...
   
 ## Road-map
 
-Link to [road-map](https://github.com/nitishm/vegeta-server/projects/1)
+Link to [backend](https://github.com/nitishm/vegeta-server/projects/1)
+Link to [frontend](https://github.com/nitishm/vegeta-server/projects/2)
+Link to [documentation](https://github.com/nitishm/vegeta-server/projects/3)
 
 ## License
 
