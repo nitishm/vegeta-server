@@ -2,12 +2,14 @@ COMMIT=$(shell git rev-parse HEAD)
 VERSION=$(shell git describe --tags --exact-match --always)
 DATE=$(shell date +'%FT%TZ%z')
 
+SERVER_DIR = cmd/server
 GO  = GO111MODULE=on go
+
 all: fmt lint build test
 
 build: deps fmt
 	CGO_ENABLED=0 ${GO} build -v -o bin/vegeta-server -a -tags=netgo \
-		-ldflags '-s -w -extldflags "-static" -X vegeta-server/restapi.version=$(VERSION) -X vegeta-server/restapi.commit=$(COMMIT) -X vegeta-server/restapi.date=$(DATE)' 
+		-ldflags '-s -w -extldflags "-static" -X vegeta-server/restapi.version=$(VERSION) -X vegeta-server/restapi.commit=$(COMMIT) -X vegeta-server/restapi.date=$(DATE)' ${SERVER_DIR}
 
 clean:
 	rm -f coverage.txt
@@ -25,9 +27,6 @@ update-deps:
 
 install:
 	$(shell ./scripts/make-install.sh)
-
-swagger:
-	bin/swagger generate server --spec=spec/swagger.yaml --name=vegeta --exclude-main
 
 test:
 	${GO} test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
@@ -47,4 +46,4 @@ ineffassign:
 run: build
 	$(shell bin/vegeta-server --scheme=http --host=localhost --port=8000)
 
-.PHONY: all build clean deps update-deps install swagger test fmt validate lint ineffassign run
+.PHONY: all build clean deps update-deps install test fmt validate lint ineffassign run
