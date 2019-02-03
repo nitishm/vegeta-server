@@ -514,6 +514,20 @@ func init() {
           "format": "int64",
           "example": 50
         },
+        "status_codes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              }
+            }
+          }
+        },
         "success": {
           "type": "integer",
           "format": "int",
@@ -1104,6 +1118,20 @@ func init() {
           "type": "integer",
           "format": "int64",
           "example": 50
+        },
+        "status_codes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              }
+            }
+          }
         },
         "success": {
           "type": "integer",

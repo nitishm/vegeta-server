@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -50,6 +52,9 @@ type Report struct {
 	// requests
 	Requests int64 `json:"requests,omitempty"`
 
+	// status codes
+	StatusCodes []*ReportStatusCodesItems0 `json:"status_codes"`
+
 	// success
 	Success int64 `json:"success,omitempty"`
 
@@ -82,6 +87,10 @@ func (m *Report) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateLatest(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatusCodes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -179,6 +188,31 @@ func (m *Report) validateLatest(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("latest", "body", "date-time", m.Latest.String(), formats); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Report) validateStatusCodes(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.StatusCodes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.StatusCodes); i++ {
+		if swag.IsZero(m.StatusCodes[i]) { // not required
+			continue
+		}
+
+		if m.StatusCodes[i] != nil {
+			if err := m.StatusCodes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status_codes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -309,6 +343,40 @@ func (m *ReportLatencies) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ReportLatencies) UnmarshalBinary(b []byte) error {
 	var res ReportLatencies
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ReportStatusCodesItems0 report status codes items0
+// swagger:model ReportStatusCodesItems0
+type ReportStatusCodesItems0 struct {
+
+	// code
+	Code string `json:"code,omitempty"`
+
+	// count
+	Count int64 `json:"count,omitempty"`
+}
+
+// Validate validates this report status codes items0
+func (m *ReportStatusCodesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ReportStatusCodesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ReportStatusCodesItems0) UnmarshalBinary(b []byte) error {
+	var res ReportStatusCodesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
