@@ -1,7 +1,7 @@
-[![GoDoc](https://godoc.org/github.com/shazow/ssh-chat?status.svg)](https://godoc.org/github.com/nitishm/vegeta-server/pkg/vegeta) 
-[![Go Report Card](https://goreportcard.com/badge/gojp/goreportcard)](https://goreportcard.com/report/nitishm/vegeta-server) 
-[![Build Status](https://travis-ci.org/shazow/ssh-chat.svg?branch=master)](https://travis-ci.org/nitishm/vegeta-server) 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/nitishm/vegeta-server/blob/master/LICENSE) 
+[![GoDoc](https://godoc.org/github.com/shazow/ssh-chat?status.svg)](https://godoc.org/github.com/nitishm/vegeta-server/pkg/vegeta)
+[![Go Report Card](https://goreportcard.com/badge/gojp/goreportcard)](https://goreportcard.com/report/nitishm/vegeta-server)
+[![Build Status](https://travis-ci.org/shazow/ssh-chat.svg?branch=master)](https://travis-ci.org/nitishm/vegeta-server)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/nitishm/vegeta-server/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/nitishm/vegeta-server/badge.svg?branch=master)](https://coveralls.io/github/nitishm/vegeta-server?branch=master)
 # Vegeta Server - A RESTful load-testing service
 
@@ -9,7 +9,7 @@
 
 A RESTful API server for [vegeta](https://github.com/tsenart/vegeta), a load testing tool written in [Go](https://github.com/golang/go).
 
-Vegeta is a versatile HTTP load testing tool built out of a need to drill HTTP services with a constant request rate. The vegeta library is written in Go, which makes it ideal to implement server in Go.  
+Vegeta is a versatile HTTP load testing tool built out of a need to drill HTTP services with a constant request rate. The vegeta library is written in Go, which makes it ideal to implement server in Go.
 
 The REST API model enables users to, asynchronously, submit multiple `attack`s targeting the same (or varied) endpoints, lookup pending or historical `report`s and update/cancel/re-submit `attack`s, using a simple RESTful API.
 
@@ -68,18 +68,18 @@ Help Options:
   -h, --help               Show this help message
 ```
 
-#### Example 
+#### Example
 *Serve `HTTP` traffic at `localhost:8000/api/v1`*
 ```
 ./bin/vegeta-server --scheme=http --host=localhost --port=8000
 ```
 
 > **Bonus**
-> 
+>
 > The `localhost:8000` example can be also started using the `run` target, which handles the build and starts the server.
 > ```
 > make run
-> 
+>
 > INFO[0000] Serving vegeta at http://127.0.0.1:8000
 > ```
 
@@ -90,7 +90,7 @@ Help Options:
 ```
 curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://localhost:8000/api/v1/attack","scheme": "http"}}' http://localhost:8000/api/v1/attack
 ```
- 
+
 ```
 {
     "id":"d9788d4c-1bd7-48e9-92e4-f8d53603a483",
@@ -165,6 +165,12 @@ curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483
         "rate": 5.3514321145862915,
         "requests": 15,
         "success": 1,
+        "status_codes": [
+            {
+                "code": "200",
+                "count": 15
+            }
+        ],
         "wait": 315104
     }
 }
@@ -202,6 +208,12 @@ curl http://localhost:8000/api/v1/report/
             "rate": 5.3514321145862915,
             "requests": 15,
             "success": 1,
+            "status_codes": [
+                {
+                    "code": "200",
+                    "count": 15
+                }
+            ],
             "wait": 315104
         }
     },
@@ -229,6 +241,13 @@ curl http://localhost:8000/api/v1/report/
             "rate": 50.08399085265991,
             "requests": 500,
             "success": 1,
+            "success": 1,
+            "status_codes": [
+                {
+                    "code": "200",
+                    "count": 500
+                }
+            ],
             "wait": 425382
         }
     }
@@ -265,7 +284,7 @@ The server code is generated using [go-swagger](https://github.com/go-swagger/go
 
 ### Generate the server code
 
-To generate the **server** code using the `go-swagger` CLI tool, use `make swagger`. 
+To generate the **server** code using the `go-swagger` CLI tool, use `make swagger`.
 > NOTE: Install the `go-swagger` tool binary perform using `make install`)
 
 ```
@@ -286,7 +305,7 @@ You can get these now with: go get -u -f ./...
 
 ---
 
-### Code Structure 
+### Code Structure
 **Generated Packages (_DO NOT EDIT_)**
 1. [`/restapi`](https://github.com/nitishm/vegeta-server/tree/master/restapi) (except for [`configure_vegeta.go`](https://github.com/nitishm/vegeta-server/blob/master/restapi/configure_vegeta.go)) : Generated server code and specification object.
 2.  [`/restapi/operations`](https://github.com/nitishm/vegeta-server/tree/master/restapi/operations) : Generated API params/responses/handlers.
@@ -299,7 +318,7 @@ You can get these now with: go get -u -f ./...
    Exportable packages used across the project
 3. [`configure_vegeta.go`](https://github.com/nitishm/vegeta-server/blob/master/restapi/configure_vegeta.go) :
   API handlers that utilize the `internal` and `pkg` packages.
-  
+
 ## Road-map
 
 Link to [backend](https://github.com/nitishm/vegeta-server/projects/1)

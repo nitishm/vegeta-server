@@ -2,6 +2,7 @@ package vegeta
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 
 	log "github.com/sirupsen/logrus"
@@ -120,5 +121,29 @@ decode:
 		return "", err
 	}
 
+	modifyReportStatusCodes(buf)
+
 	return buf.String(), nil
+}
+
+func modifyReportStatusCodes(buf *bytes.Buffer) {
+	var m map[string]interface{}
+	json.Unmarshal(buf.Bytes(), &m)
+
+	var oldStatusCodes map[string]int
+	osd, _ := json.Marshal(m["status_codes"])
+	json.Unmarshal(osd, &oldStatusCodes)
+
+	type statusCode struct {
+		Code  string `json:"code"`
+		Count int    `json:"count"`
+	}
+	newStatusCodes := []statusCode{}
+	for k, v := range oldStatusCodes {
+		newStatusCodes = append(newStatusCodes, statusCode{k, v})
+	}
+
+	m["status_codes"] = newStatusCodes
+	buf.Reset()
+	json.NewEncoder(buf).Encode(m)
 }

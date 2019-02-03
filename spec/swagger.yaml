@@ -189,7 +189,7 @@ definitions:
             key:
               type: string
               example: "Accept"
-            value: 
+            value:
               type: string
               example: "text/html"
         type: array
@@ -210,7 +210,7 @@ definitions:
       max-body:
         description: Specifies the maximum number of bytes to capture from the body of each response. Remaining unread bytes will be fully read but discarded. Set to -1 for no limit.
         format: int
-        type: integer 
+        type: integer
       rate:
         default: 50
         description: 'Specifies the request rate per time unit to issue against the targets. The actual request rate can vary slightly due to things like garbage collection, but overall it should stay very close to the specified. If no time unit is provided, 1s is used.'
@@ -341,21 +341,15 @@ definitions:
         type: integer
         format: int
         example: 4
-#      statusCodes:
-#        type: object
-#        properties:
-#          200:
-#            type: integer
-#            format: int64
-#            example: 4
-#          400:
-#            type: integer
-#            format: int64
-#            example: 0
-#          404:
-#            type: integer
-#            format: int64
-#            example: 0
+      status_codes:
+        type: array
+        items:
+          type: object
+          properties:
+            code:
+              type: string
+            count:
+              type: integer
       errors:
         type: array
         items:
