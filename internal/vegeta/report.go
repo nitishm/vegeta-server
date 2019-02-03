@@ -121,18 +121,25 @@ decode:
 		return "", err
 	}
 
-	modifyReportStatusCodes(buf)
+	if err := modifyReportStatusCodes(buf); err != nil {
+		log.Error("Failed to modify report status codes")
+		return "", err
+	}
 
 	return buf.String(), nil
 }
 
-func modifyReportStatusCodes(buf *bytes.Buffer) {
+func modifyReportStatusCodes(buf *bytes.Buffer) error {
 	var m map[string]interface{}
-	json.Unmarshal(buf.Bytes(), &m)
+	if err := json.Unmarshal(buf.Bytes(), &m); err != nil {
+		return err
+	}
 
 	var oldStatusCodes map[string]int
 	osd, _ := json.Marshal(m["status_codes"])
-	json.Unmarshal(osd, &oldStatusCodes)
+	if err := json.Unmarshal(osd, &oldStatusCodes); err != nil {
+		return err
+	}
 
 	type statusCode struct {
 		Code  string `json:"code"`
@@ -145,5 +152,5 @@ func modifyReportStatusCodes(buf *bytes.Buffer) {
 
 	m["status_codes"] = newStatusCodes
 	buf.Reset()
-	json.NewEncoder(buf).Encode(m)
+	return json.NewEncoder(buf).Encode(m)
 }
