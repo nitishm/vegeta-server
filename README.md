@@ -241,7 +241,6 @@ curl http://localhost:8000/api/v1/report/
             "rate": 50.08399085265991,
             "requests": 500,
             "success": 1,
-            "success": 1,
             "status_codes": [
                 {
                     "code": "200",

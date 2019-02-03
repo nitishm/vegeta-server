@@ -121,6 +121,7 @@ decode:
 		return "", err
 	}
 
+	// Adapt vegeta status code (type: map) to list of type: statusCode{}, as defined in swagger spec
 	if err := modifyReportStatusCodes(buf); err != nil {
 		log.Error("Failed to modify report status codes")
 		return "", err
@@ -135,12 +136,14 @@ func modifyReportStatusCodes(buf *bytes.Buffer) error {
 		return err
 	}
 
+	// Read old status codes from vegeta report
 	var oldStatusCodes map[string]int
 	osd, _ := json.Marshal(m["status_codes"])
 	if err := json.Unmarshal(osd, &oldStatusCodes); err != nil {
 		return err
 	}
 
+	// Adapt status codes to type: statusCode{} and append to list.
 	type statusCode struct {
 		Code  string `json:"code"`
 		Count int    `json:"count"`
