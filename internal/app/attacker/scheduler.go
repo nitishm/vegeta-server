@@ -5,25 +5,27 @@ import (
 )
 
 type attack struct {
-
 }
 
 type IScheduler interface {
-	Schedule(attack models.Attack) models.AttackResponse
+	Schedule(models.Attack) *models.AttackResponse
+	Get(string) (*models.AttackResponse, error)
+	List() []*models.AttackResponse
+	Cancel(string, bool) (*models.AttackResponse, error)
 }
 
 // TODO: scheduler must do more to figure out system capacity
 type scheduler struct {
-	ch chan *task
+	ch         chan *task
 	dispatcher IDispatcher
-	quit chan struct{}
+	quit       chan struct{}
 }
 
 func NewScheduler(dispatcher IDispatcher, quit chan struct{}) *scheduler {
 	s := &scheduler{
-		ch:      make(chan *task),
+		ch:         make(chan *task),
 		dispatcher: dispatcher,
-		quit:    quit,
+		quit:       quit,
 	}
 
 	go s.attackScheduler()
@@ -31,16 +33,60 @@ func NewScheduler(dispatcher IDispatcher, quit chan struct{}) *scheduler {
 	return s
 }
 
-func (s *scheduler) Schedule(attack models.Attack) models.AttackResponse {
+func (s *scheduler) Schedule(attack models.Attack) *models.AttackResponse {
 	task := newTask(attack)
+
 	// Schedule the test
+	ok := s.schedule()
+	if !ok {
+		// TODO: Do something here
+	}
+
 	s.ch <- task
 
 	// Return the UUID and Status = scheduled
-	return models.AttackResponse{
-		task.id,
-		task.status,
+	return &models.AttackResponse{
+		ID:     task.id,
+		Status: task.status,
 	}
+}
+
+func (s *scheduler) Get(id string) (*models.AttackResponse, error) {
+	t, err := s.dispatcher.Get(id)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &models.AttackResponse{
+		ID:     t.id,
+		Status: t.status,
+	}
+
+	return resp, err
+}
+
+func (s *scheduler) List() []*models.AttackResponse {
+	responses := make([]*models.AttackResponse, 0)
+	for _, task := range s.dispatcher.List() {
+		responses = append(responses, &models.AttackResponse{
+			ID:     task.getID(),
+			Status: task.getStatus(),
+		})
+	}
+
+	return responses
+}
+
+func (s *scheduler) Cancel(id string, cancel bool) (*models.AttackResponse, error) {
+	t, err := s.dispatcher.Cancel(id, cancel)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.AttackResponse{
+		t.getID(),
+		t.getStatus(),
+	}, nil
 }
 
 func (s *scheduler) attackScheduler() {
@@ -54,4 +100,9 @@ func (s *scheduler) attackScheduler() {
 			break
 		}
 	}
+}
+
+func (s *scheduler) schedule() bool {
+	// TODO: check system resources to schedule an attacks
+	return true
 }

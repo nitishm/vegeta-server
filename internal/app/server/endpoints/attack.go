@@ -27,32 +27,69 @@ func (e *Endpoints) PostAttackEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"code":     http.StatusOK,
-			"endpoint": "GET /attack",
-		},
-	)
+func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
+	id := c.Param("attackID")
+	resp, err := e.attacker.Get(id)
+	if err != nil {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{
+				"message": "Not found",
+				"code":    http.StatusNotFound,
+				"error":   err.Error(),
+			},
+		)
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
-func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"code":     http.StatusOK,
-			"endpoint": "GET /attack/" + c.Param("attackID"),
-		},
-	)
+func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
+	resp := e.attacker.List()
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (e *Endpoints) PostAttackByIDCancelEndpoint(c *gin.Context) {
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"code":     http.StatusOK,
-			"endpoint": "GET /attack/" + c.Param("attackID") + "/cancel",
-		},
-	)
+	id := c.Param("attackID")
+	var attackCancelParams models.AttackCancel
+	if err := c.ShouldBindJSON(&attackCancelParams); err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"message": "Bad request params",
+				"code":    http.StatusBadRequest,
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	_, err := e.attacker.Get(id)
+	if err != nil {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{
+				"message": "Not Found",
+				"code":    http.StatusNotFound,
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	resp, err := e.attacker.Cancel(id, attackCancelParams.Cancel)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"message": "Internal server error",
+				"code":    http.StatusInternalServerError,
+				"error":   err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
 }

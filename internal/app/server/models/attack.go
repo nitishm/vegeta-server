@@ -1,10 +1,36 @@
 package models
 
+// AttackHeader provides a key/value object for headers
+type AttackHeader struct {
+	Key   string `json:"key,omitempty"`
+	Value string `json:"value,omitempty"`
+}
+
 // Attack request parameters
 type Attack struct {
-	Rate     int    `json:"rate,omitempty"`
-	Duration string `json:"duration,omitempty"`
-	Target   Target `json:"target,omitempty"`
+	Rate int `json:"rate,omitempty"`
+
+	Connections int64 `json:"connections,omitempty"`
+	Workers     int64 `json:"workers,omitempty"`
+	MaxBody     int64 `json:"max-body,omitempty"`
+	Redirects   int64 `json:"redirects,omitempty"`
+
+	Key       string `json:"key,omitempty"`
+	Laddr     string `json:"laddr,omitempty"`
+	Duration  string `json:"duration,omitempty"`
+	Body      string `json:"body,omitempty"`
+	Cert      string `json:"cert,omitempty"`
+	Resolvers string `json:"resolvers,omitempty"`
+	RootCerts string `json:"root-certs,omitempty"`
+	Timeout   string `json:"timeout,omitempty"`
+
+	H2c       bool `json:"h2c,omitempty"`
+	Http2     bool `json:"http2,omitempty"`
+	Insecure  bool `json:"insecure,omitempty"`
+	Keepalive bool `json:"keepalive,omitempty"`
+
+	Target  Target         `json:"target,omitempty"`
+	Headers []AttackHeader `json:"headers,omitempty"`
 }
 
 // Attack request target parameters
@@ -29,7 +55,7 @@ const (
 	AttackResponseStatusCanceled AttackStatus = "canceled"
 
 	// AttackResponseStatusCompleted captures enum value "completed"
-	AttackResponseStatusCompleted  AttackStatus= "completed"
+	AttackResponseStatusCompleted AttackStatus = "completed"
 
 	// AttackResponseStatusFailed captures enum value "failed"
 	AttackResponseStatusFailed AttackStatus = "failed"
@@ -41,4 +67,9 @@ type AttackResponse struct {
 	ID string `json:"id,omitempty"`
 	// Status captures the attack status in the scheduler pipeline
 	Status AttackStatus `json:"status,omitempty"`
+}
+
+// AttackCancel
+type AttackCancel struct {
+	Cancel bool `json:"cancel"`
 }
