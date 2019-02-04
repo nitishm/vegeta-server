@@ -2,33 +2,48 @@ package main
 
 import (
 	"fmt"
-	"vegeta-server/internal/app/server"
+	"os"
+	"os/signal"
+	"vegeta-server/internal/app/attacker"
+	"vegeta-server/internal/app/server/endpoints"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/gin-gonic/gin"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	verbose = kingpin.Flag("verbose", "Verbose mode.").Short('v').Bool()
-	ip      = kingpin.Arg("ip", "Server IP Address.").Default("localhost").String()
-	port    = kingpin.Arg("port", "Server Port.").Default("8000").String()
+	ip   = kingpin.Arg("ip", "Server IP Address.").Default("localhost").String()
+	port = kingpin.Arg("port", "Server Port.").Default("8000").String()
 )
 
 func main() {
 	kingpin.Parse()
 
-	router := gin.Default()
+	sig := make(chan os.Signal, 1)
+	quit := make(chan struct{})
 
-	// api/v1 router group
-	v1 := router.Group("/api/v1")
-	{
-		v1.POST("/attack", server.PostAttackEndpoint)
-		v1.GET("/attack", server.GetAttackEndpoint)
-		v1.GET("/attack/:id", server.GetAttackByIDEndpoint)
-	}
+	signal.Notify(sig, os.Interrupt)
+	go func() {
+		for {
+			select {
+			case <-sig:
+				quit <- struct{}{}
+			}
+		}
+	}()
+
+	attacker := attacker.NewAttacker(
+		attacker.NewScheduler(
+			attacker.NewDispatcher(
+				attacker.DefaultAttackFn,
+			),
+			quit,
+		),
+	)
+
+	engine := endpoints.SetupRouter(attacker)
 
 	// start server
-	log.Fatal(router.Run(fmt.Sprintf("%s:%s", *ip, *port)))
+	log.Fatal(engine.Run(fmt.Sprintf("%s:%s", *ip, *port)))
 }
