@@ -57,16 +57,14 @@ func main() {
 		}
 	}()
 
-	attacker := attacker.NewAttacker(
-		attacker.NewScheduler(
-			attacker.NewDispatcher(
-				attacker.DefaultAttackFn,
-			),
-			quit,
+	scheduler := attacker.NewScheduler(
+		attacker.NewDispatcher(
+			attacker.DefaultAttackFn,
 		),
+		quit,
 	)
 
-	engine := endpoints.SetupRouter(attacker)
+	engine := endpoints.SetupRouter(scheduler)
 
 	// start server
 	log.Fatal(engine.Run(fmt.Sprintf("%s:%s", *ip, *port)))

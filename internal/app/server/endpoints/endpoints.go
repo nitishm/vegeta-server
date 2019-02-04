@@ -6,19 +6,19 @@ import (
 )
 
 type Endpoints struct {
-	attacker attacker.IAttacker
+	scheduler attacker.IScheduler
 }
 
-func NewEndpoints(a attacker.IAttacker) *Endpoints {
+func NewEndpoints(s attacker.IScheduler) *Endpoints {
 	return &Endpoints{
-		a,
+		s,
 	}
 }
 
-func SetupRouter(a attacker.IAttacker) *gin.Engine {
+func SetupRouter(s attacker.IScheduler) *gin.Engine {
 	router := gin.Default()
 
-	e := NewEndpoints(a)
+	e := NewEndpoints(s)
 
 	// api/v1 router group
 	v1 := router.Group("/api/v1")

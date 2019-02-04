@@ -67,11 +67,9 @@ func performRequest(r http.Handler, method, path string, body io.Reader) *httpte
 
 func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 	router := SetupRouter(
-		attacker.NewAttacker(
-			&attacker.MockScheduler{
-				Responses: setupAttackResponses(1),
-			},
-		),
+		&attacker.MockScheduler{
+			Responses: setupAttackResponses(1),
+		},
 	)
 
 	expectedResponse := models.AttackResponse{
@@ -106,11 +104,9 @@ func TestEndpoints_GetAttackByIDEndpoint(t *testing.T) {
 	expectedID := "0"
 
 	router := SetupRouter(
-		attacker.NewAttacker(
-			&attacker.MockScheduler{
-				Responses: setupAttackResponses(1),
-			},
-		),
+		&attacker.MockScheduler{
+			Responses: setupAttackResponses(1),
+		},
 	)
 
 	w := performRequest(
@@ -136,11 +132,9 @@ func TestEndpoints_GetAttackByIDEndpoint_NotFound(t *testing.T) {
 	expectedID := "100"
 
 	router := SetupRouter(
-		attacker.NewAttacker(
-			&attacker.MockScheduler{
-				Responses: setupAttackResponses(1),
-			},
-		),
+		&attacker.MockScheduler{
+			Responses: setupAttackResponses(1),
+		},
 	)
 
 	w := performRequest(
@@ -157,11 +151,9 @@ func TestEndpoints_GetAttackEndpoint(t *testing.T) {
 	num := 5
 
 	router := SetupRouter(
-		attacker.NewAttacker(
-			&attacker.MockScheduler{
-				Responses: setupAttackResponses(num),
-			},
-		),
+		&attacker.MockScheduler{
+			Responses: setupAttackResponses(num),
+		},
 	)
 
 	w := performRequest(
@@ -193,11 +185,9 @@ func TestEndpoints_PostAttackByIDCancelEndpoint(t *testing.T) {
 	}
 
 	router := SetupRouter(
-		attacker.NewAttacker(
-			&attacker.MockScheduler{
-				Responses: responses,
-			},
-		),
+		&attacker.MockScheduler{
+			Responses: responses,
+		},
 	)
 
 	body, err := setupAttackCancelReqBody(id)

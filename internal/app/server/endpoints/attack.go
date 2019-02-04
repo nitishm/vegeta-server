@@ -22,14 +22,14 @@ func (e *Endpoints) PostAttackEndpoint(c *gin.Context) {
 	}
 
 	// Submit the attack
-	resp := e.attacker.Submit(attackParams)
+	resp := e.scheduler.Schedule(attackParams)
 
 	c.JSON(http.StatusOK, resp)
 }
 
 func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 	id := c.Param("attackID")
-	resp, err := e.attacker.Get(id)
+	resp, err := e.scheduler.Get(id)
 	if err != nil {
 		c.JSON(
 			http.StatusNotFound,
@@ -45,7 +45,7 @@ func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 }
 
 func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
-	resp := e.attacker.List()
+	resp := e.scheduler.List()
 
 	c.JSON(http.StatusOK, resp)
 }
@@ -65,7 +65,7 @@ func (e *Endpoints) PostAttackByIDCancelEndpoint(c *gin.Context) {
 		return
 	}
 
-	_, err := e.attacker.Get(id)
+	_, err := e.scheduler.Get(id)
 	if err != nil {
 		c.JSON(
 			http.StatusNotFound,
@@ -78,7 +78,7 @@ func (e *Endpoints) PostAttackByIDCancelEndpoint(c *gin.Context) {
 		return
 	}
 
-	resp, err := e.attacker.Cancel(id, attackCancelParams.Cancel)
+	resp, err := e.scheduler.Cancel(id, attackCancelParams.Cancel)
 	if err != nil {
 		c.JSON(
 			http.StatusInternalServerError,
