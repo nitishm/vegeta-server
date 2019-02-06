@@ -1,14 +1,19 @@
-package attacker
+package scheduler
 
 import (
+	"vegeta-server/internal"
+	"vegeta-server/internal/app/dispatcher"
 	"vegeta-server/internal/app/server/models"
 )
+
+type SchedulerFn func(dispatcher.IDispatcher, chan internal.ITask, chan struct{})
 
 type attack struct {
 }
 
 type IScheduler interface {
-	Schedule(models.Attack) *models.AttackResponse
+	Run(chan struct{})
+	Schedule(models.AttackParams) *models.AttackResponse
 	Get(string) (*models.AttackResponse, error)
 	List() []*models.AttackResponse
 	Cancel(string, bool) (*models.AttackResponse, error)
@@ -16,25 +21,28 @@ type IScheduler interface {
 
 // TODO: scheduler must do more to figure out system capacity
 type scheduler struct {
-	ch         chan *task
-	dispatcher IDispatcher
-	quit       chan struct{}
+	schedulerFn SchedulerFn
+	taskCh      chan internal.ITask
+	dispatcher  dispatcher.IDispatcher
+	quit        chan struct{}
 }
 
-func NewScheduler(dispatcher IDispatcher, quit chan struct{}) *scheduler {
+func NewScheduler(dispatcher dispatcher.IDispatcher, schedulerFn SchedulerFn) *scheduler {
 	s := &scheduler{
-		ch:         make(chan *task),
-		dispatcher: dispatcher,
-		quit:       quit,
+		schedulerFn: schedulerFn,
+		taskCh:      make(chan internal.ITask),
+		dispatcher:  dispatcher,
 	}
-
-	go s.attackScheduler()
 
 	return s
 }
 
-func (s *scheduler) Schedule(attack models.Attack) *models.AttackResponse {
-	task := newTask(attack)
+func (s *scheduler) Run(quit chan struct{}) {
+	s.schedulerFn(s.dispatcher, s.taskCh, quit)
+}
+
+func (s *scheduler) Schedule(attack models.AttackParams) *models.AttackResponse {
+	task := internal.NewTask(attack)
 
 	// Schedule the test
 	ok := s.schedule()
@@ -42,12 +50,12 @@ func (s *scheduler) Schedule(attack models.Attack) *models.AttackResponse {
 		// TODO: Do something here
 	}
 
-	s.ch <- task
+	s.taskCh <- task
 
 	// Return the UUID and Status = scheduled
 	return &models.AttackResponse{
-		ID:     task.id,
-		Status: task.status,
+		ID:     task.ID(),
+		Status: task.Status(),
 	}
 }
 
@@ -58,8 +66,8 @@ func (s *scheduler) Get(id string) (*models.AttackResponse, error) {
 	}
 
 	resp := &models.AttackResponse{
-		ID:     t.id,
-		Status: t.status,
+		ID:     t.ID(),
+		Status: t.Status(),
 	}
 
 	return resp, err
@@ -69,8 +77,8 @@ func (s *scheduler) List() []*models.AttackResponse {
 	responses := make([]*models.AttackResponse, 0)
 	for _, task := range s.dispatcher.List() {
 		responses = append(responses, &models.AttackResponse{
-			ID:     task.getID(),
-			Status: task.getStatus(),
+			ID:     task.ID(),
+			Status: task.Status(),
 		})
 	}
 
@@ -84,25 +92,25 @@ func (s *scheduler) Cancel(id string, cancel bool) (*models.AttackResponse, erro
 	}
 
 	return &models.AttackResponse{
-		t.getID(),
-		t.getStatus(),
+		t.ID(),
+		t.Status(),
 	}, nil
-}
-
-func (s *scheduler) attackScheduler() {
-	for {
-		select {
-		case task := <-s.ch:
-			// TODO: Scheduler should check if it can schedule attack
-			// 		 If not defer to later (maintain a separate queue)
-			s.dispatcher.Dispatch(task)
-		case <-s.quit:
-			break
-		}
-	}
 }
 
 func (s *scheduler) schedule() bool {
 	// TODO: check system resources to schedule an attacks
 	return true
+}
+
+func DefaultSchedulerFn(dispatcher dispatcher.IDispatcher, taskCh chan internal.ITask, quit chan struct{}) {
+	for {
+		select {
+		case task := <-taskCh:
+			// TODO: Scheduler should check if it can schedule attack
+			// 		 If not defer to later (maintain a separate queue)
+			dispatcher.Dispatch(task)
+		case <-quit:
+			break
+		}
+	}
 }

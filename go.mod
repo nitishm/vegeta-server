@@ -4,7 +4,6 @@ require (
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae // indirect
-	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-contrib/sse v0.0.0-20190125020943-a7658810eb74 // indirect
 	github.com/gin-gonic/gin v1.3.0
 	github.com/golang/protobuf v1.2.0 // indirect

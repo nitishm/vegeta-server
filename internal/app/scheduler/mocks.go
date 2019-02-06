@@ -1,4 +1,4 @@
-package attacker
+package scheduler
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ type MockScheduler struct {
 	Responses map[string]*models.AttackResponse
 }
 
-func (ms *MockScheduler) Schedule(models.Attack) *models.AttackResponse {
+func (ms *MockScheduler) Schedule(models.AttackParams) *models.AttackResponse {
 	return &models.AttackResponse{
 		Status: models.AttackResponseStatusScheduled,
 	}
@@ -43,4 +43,13 @@ func (ms *MockScheduler) Cancel(id string, cancel bool) (*models.AttackResponse,
 	}
 
 	return resp, nil
+}
+
+func (ms *MockScheduler) Run(quit chan struct{}) {
+	for {
+		select {
+		case <-quit:
+			return
+		}
+	}
 }

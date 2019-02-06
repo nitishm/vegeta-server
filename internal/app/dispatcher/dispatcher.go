@@ -1,45 +1,46 @@
-package attacker
+package dispatcher
 
 import (
 	"fmt"
 	"sync"
+	"vegeta-server/internal"
 )
 
 type IDispatcher interface {
-	Dispatch(*task)
-	Get(string) (*task, error)
-	List() []*task
-	Cancel(string, bool) (*task, error)
+	Dispatch(internal.ITask)
+	Get(string) (internal.ITask, error)
+	List() []internal.ITask
+	Cancel(string, bool) (internal.ITask, error)
 }
 
 type dispatcher struct {
 	mu       *sync.RWMutex
-	tasks    map[string]*task
-	attackFn AttackFunc
+	tasks    map[string]internal.ITask
+	attackFn internal.AttackFunc
 }
 
-func NewDispatcher(fn AttackFunc) *dispatcher {
+func NewDispatcher(fn internal.AttackFunc) *dispatcher {
 	return &dispatcher{
 		&sync.RWMutex{},
-		make(map[string]*task),
+		make(map[string]internal.ITask),
 		fn,
 	}
 
 }
 
-func (d *dispatcher) Dispatch(task *task) {
+func (d *dispatcher) Dispatch(task internal.ITask) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	// Track the task
-	d.tasks[task.id] = task
+	d.tasks[task.ID()] = task
 
 	// Run the task
-	task.run(d.attackFn)
+	task.Run(d.attackFn)
 
 	return
 }
 
-func (d *dispatcher) Get(id string) (*task, error) {
+func (d *dispatcher) Get(id string) (internal.ITask, error) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	t, ok := d.tasks[id]
@@ -50,17 +51,17 @@ func (d *dispatcher) Get(id string) (*task, error) {
 	return t, nil
 }
 
-func (d *dispatcher) List() []*task {
+func (d *dispatcher) List() []internal.ITask {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
-	tasks := make([]*task, 0)
+	tasks := make([]internal.ITask, 0)
 	for _, task := range d.tasks {
 		tasks = append(tasks, task)
 	}
 	return tasks
 }
 
-func (d *dispatcher) Cancel(id string, cancel bool) (*task, error) {
+func (d *dispatcher) Cancel(id string, cancel bool) (internal.ITask, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	t, ok := d.tasks[id]
@@ -69,7 +70,7 @@ func (d *dispatcher) Cancel(id string, cancel bool) (*task, error) {
 	}
 
 	if cancel {
-		err := t.cancel()
+		err := t.Cancel()
 		if err != nil {
 			return nil, err
 		}

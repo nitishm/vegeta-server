@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"vegeta-server/internal/app/attacker"
+	"vegeta-server/internal"
+	"vegeta-server/internal/app/dispatcher"
+	"vegeta-server/internal/app/scheduler"
 	"vegeta-server/internal/app/server/endpoints"
 
 	log "github.com/sirupsen/logrus"
@@ -27,13 +29,9 @@ var (
 
 func main() {
 	kingpin.Parse()
-	log.Infof("PID - %v", os.Getpid())
 
 	if *v {
 		// Set at linking time
-		fmt.Println("=======")
-		fmt.Println("VERSION")
-		fmt.Println("=======")
 		fmt.Println("Version\t", version)
 		fmt.Println("Commit \t", commit)
 		fmt.Println("Runtime\t", fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH))
@@ -43,8 +41,20 @@ func main() {
 		return
 	}
 
-	sig := make(chan os.Signal, 1)
 	quit := make(chan struct{})
+
+	scheduler := scheduler.NewScheduler(
+		dispatcher.NewDispatcher(
+			internal.DefaultAttackFn,
+		),
+		scheduler.DefaultSchedulerFn,
+	)
+
+	go scheduler.Run(quit)
+
+	engine := endpoints.SetupRouter(scheduler)
+
+	sig := make(chan os.Signal, 1)
 
 	signal.Notify(sig, os.Interrupt)
 	go func() {
@@ -56,15 +66,6 @@ func main() {
 			os.Exit(0)
 		}
 	}()
-
-	scheduler := attacker.NewScheduler(
-		attacker.NewDispatcher(
-			attacker.DefaultAttackFn,
-		),
-		quit,
-	)
-
-	engine := endpoints.SetupRouter(scheduler)
 
 	// start server
 	log.Fatal(engine.Run(fmt.Sprintf("%s:%s", *ip, *port)))

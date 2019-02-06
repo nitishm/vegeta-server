@@ -8,7 +8,7 @@ import (
 )
 
 func (e *Endpoints) PostAttackEndpoint(c *gin.Context) {
-	var attackParams models.Attack
+	var attackParams models.AttackParams
 	if err := c.ShouldBindJSON(&attackParams); err != nil {
 		c.JSON(
 			http.StatusBadRequest,

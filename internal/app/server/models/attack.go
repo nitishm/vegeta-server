@@ -6,8 +6,8 @@ type AttackHeader struct {
 	Value string `json:"value,omitempty"`
 }
 
-// Attack request parameters
-type Attack struct {
+// AttackParams request parameters
+type AttackParams struct {
 	Rate int `json:"rate,omitempty"`
 
 	Connections int64 `json:"connections,omitempty"`
@@ -33,7 +33,7 @@ type Attack struct {
 	Headers []AttackHeader `json:"headers,omitempty"`
 }
 
-// Attack request target parameters
+// AttackParams request target parameters
 type Target struct {
 	Method string `json:"method,omitempty"`
 	URL    string `json:"URL,omitempty"`

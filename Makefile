@@ -9,7 +9,7 @@ all: fmt lint build test
 
 build: deps fmt
 	CGO_ENABLED=0 ${GO} build -v -o bin/vegeta-server -a -tags=netgo \
-		-ldflags '-s -w -extldflags "-static" -X vegeta-server/restapi.version=$(VERSION) -X vegeta-server/restapi.commit=$(COMMIT) -X vegeta-server/restapi.date=$(DATE)' ${SERVER_DIR}
+		-ldflags '-s -w -extldflags "-static" -X vegeta-server/restapi.version=$(VERSION) -X vegeta-server/restapi.commit=$(COMMIT) -X vegeta-server/restapi.date=$(DATE)' ${SERVER_DIR}/main.go
 
 clean:
 	rm -f coverage.txt

@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
-	"vegeta-server/internal/app/attacker"
+	"vegeta-server/internal/app/scheduler"
 	"vegeta-server/internal/app/server/models"
 )
 
@@ -67,7 +67,7 @@ func performRequest(r http.Handler, method, path string, body io.Reader) *httpte
 
 func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 	router := SetupRouter(
-		&attacker.MockScheduler{
+		&scheduler.MockScheduler{
 			Responses: setupAttackResponses(1),
 		},
 	)
@@ -104,7 +104,7 @@ func TestEndpoints_GetAttackByIDEndpoint(t *testing.T) {
 	expectedID := "0"
 
 	router := SetupRouter(
-		&attacker.MockScheduler{
+		&scheduler.MockScheduler{
 			Responses: setupAttackResponses(1),
 		},
 	)
@@ -132,7 +132,7 @@ func TestEndpoints_GetAttackByIDEndpoint_NotFound(t *testing.T) {
 	expectedID := "100"
 
 	router := SetupRouter(
-		&attacker.MockScheduler{
+		&scheduler.MockScheduler{
 			Responses: setupAttackResponses(1),
 		},
 	)
@@ -151,7 +151,7 @@ func TestEndpoints_GetAttackEndpoint(t *testing.T) {
 	num := 5
 
 	router := SetupRouter(
-		&attacker.MockScheduler{
+		&scheduler.MockScheduler{
 			Responses: setupAttackResponses(num),
 		},
 	)
@@ -185,7 +185,7 @@ func TestEndpoints_PostAttackByIDCancelEndpoint(t *testing.T) {
 	}
 
 	router := SetupRouter(
-		&attacker.MockScheduler{
+		&scheduler.MockScheduler{
 			Responses: responses,
 		},
 	)

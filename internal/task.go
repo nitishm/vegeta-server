@@ -1,4 +1,4 @@
-package attacker
+package internal
 
 import (
 	"bytes"
@@ -12,6 +12,34 @@ import (
 	"time"
 	"vegeta-server/internal/app/server/models"
 )
+
+type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
+
+func DefaultAttackFn(opts *AttackOpts) <-chan *vegeta.Result {
+	atk := vegeta.NewAttacker(
+		vegeta.Redirects(opts.Redirects),
+		vegeta.Timeout(opts.Timeout),
+		vegeta.Workers(opts.Workers),
+		vegeta.KeepAlive(opts.Keepalive),
+		vegeta.Connections(opts.Connections),
+		vegeta.HTTP2(opts.HTTP2),
+		vegeta.H2C(opts.H2c),
+		vegeta.MaxBody(opts.MaxBody),
+	)
+	tr := vegeta.NewStaticTargeter(opts.Target)
+	return atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
+}
+
+type ITask interface {
+	ID() string
+	Status() models.AttackStatus
+	Params() models.AttackParams
+
+	Run(AttackFunc) error
+	Complete() error
+	Cancel() error
+	Fail() error
+}
 
 type attackContext struct {
 	context.Context
@@ -30,11 +58,11 @@ func newAttackContext() attackContext {
 type task struct {
 	ctx    attackContext
 	id     string
-	params models.Attack
+	params models.AttackParams
 	status models.AttackStatus
 }
 
-func newTask(params models.Attack) *task {
+func NewTask(params models.AttackParams) *task {
 	id := uuid.NewV4().String()
 	return &task{
 		newAttackContext(),
@@ -44,7 +72,7 @@ func newTask(params models.Attack) *task {
 	}
 }
 
-func (t *task) run(fn AttackFunc) error {
+func (t *task) Run(fn AttackFunc) error {
 	if t.status != models.AttackResponseStatusScheduled {
 		return fmt.Errorf("cannot run task %s with status %s", t.id, t.status)
 	}
@@ -56,7 +84,7 @@ func (t *task) run(fn AttackFunc) error {
 	return nil
 }
 
-func (t *task) complete() error {
+func (t *task) Complete() error {
 	if t.status != models.AttackResponseStatusRunning {
 		return fmt.Errorf("cannot mark completed for task %s with status %s", t.id, t.status)
 	}
@@ -66,7 +94,7 @@ func (t *task) complete() error {
 	return nil
 }
 
-func (t *task) cancel() error {
+func (t *task) Cancel() error {
 	if t.status == models.AttackResponseStatusCompleted || t.status == models.AttackResponseStatusFailed {
 		return fmt.Errorf("cannot cancel task %s with status %s", t.id, t.status)
 	}
@@ -78,17 +106,21 @@ func (t *task) cancel() error {
 	return nil
 }
 
-func (t *task) fail() error {
+func (t *task) Fail() error {
 	t.status = models.AttackResponseStatusFailed
 	return nil
 }
 
-func (t *task) getID() string {
+func (t *task) ID() string {
 	return t.id
 }
 
-func (t *task) getStatus() models.AttackStatus {
+func (t *task) Status() models.AttackStatus {
 	return t.status
+}
+
+func (t *task) Params() models.AttackParams {
+	return t.params
 }
 
 func run(t *task, fn AttackFunc) error {
@@ -112,13 +144,13 @@ loop:
 				break loop
 			}
 			if err := enc.Encode(r); err != nil {
-				err := t.fail()
+				err := t.Fail()
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 		case <-t.ctx.Done():
-			log.Warnf("Attack %s was canceled", t.id)
+			log.Warnf("AttackParams %s was canceled", t.id)
 			return nil
 		}
 	}
@@ -130,16 +162,16 @@ loop:
 	//}
 
 	// Mark attack as completed
-	err = t.complete()
+	err = t.Complete()
 	if err != nil {
 		log.WithError(err).Error("Failed to Complete")
-		_ = t.fail()
+		_ = t.Fail()
 	}
 
 	return nil
 }
 
-func attackOptsFromModel(id string, params models.Attack) (*AttackOpts, error) {
+func attackOptsFromModel(id string, params models.AttackParams) (*AttackOpts, error) {
 	rate := vegeta.Rate{Freq: int(params.Rate), Per: time.Second}
 
 	// Set Duration

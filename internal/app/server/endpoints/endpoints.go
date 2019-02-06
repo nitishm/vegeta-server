@@ -2,20 +2,20 @@ package endpoints
 
 import (
 	"github.com/gin-gonic/gin"
-	"vegeta-server/internal/app/attacker"
+	"vegeta-server/internal/app/scheduler"
 )
 
 type Endpoints struct {
-	scheduler attacker.IScheduler
+	scheduler scheduler.IScheduler
 }
 
-func NewEndpoints(s attacker.IScheduler) *Endpoints {
+func NewEndpoints(s scheduler.IScheduler) *Endpoints {
 	return &Endpoints{
 		s,
 	}
 }
 
-func SetupRouter(s attacker.IScheduler) *gin.Engine {
+func SetupRouter(s scheduler.IScheduler) *gin.Engine {
 	router := gin.Default()
 
 	e := NewEndpoints(s)
