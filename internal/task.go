@@ -7,16 +7,13 @@ import (
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/tsenart/vegeta/lib"
-	"net/http"
-	"strings"
 	"sync"
-	"time"
 	"vegeta-server/internal/models"
 )
 
-type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
+type AttackFunc func(*models.AttackOpts) <-chan *vegeta.Result
 
-func DefaultAttackFn(opts *AttackOpts) <-chan *vegeta.Result {
+func DefaultAttackFn(opts *models.AttackOpts) <-chan *vegeta.Result {
 	atk := vegeta.NewAttacker(
 		vegeta.Redirects(opts.Redirects),
 		vegeta.Timeout(opts.Timeout),
@@ -143,7 +140,7 @@ func (t *task) Params() models.AttackParams {
 
 func run(t *task, fn AttackFunc) error {
 
-	opts, err := attackOptsFromModel(t.ID(), t.Params())
+	opts, err := models.NewAttackOptsFromAttackParams(t.ID(), t.Params())
 	if err != nil {
 		return err
 	}
@@ -188,57 +185,4 @@ loop:
 	}
 
 	return nil
-}
-
-func attackOptsFromModel(id string, params models.AttackParams) (*AttackOpts, error) {
-	rate := vegeta.Rate{Freq: int(params.Rate), Per: time.Second}
-
-	// Set Duration
-	dur, err := time.ParseDuration(params.Duration)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set timeout
-	timeout, _ := time.ParseDuration(params.Timeout)
-
-	// Set target headers
-	var hdr http.Header
-	for _, h := range params.Headers {
-		hdr.Add(h.Key, h.Value)
-	}
-
-	// Set resolvers
-	resolvers := strings.Split(params.Resolvers, ",")
-
-	// TODO: Set Local Address
-
-	// TODO: Set TLS configuration
-
-	// TODO: Set target body
-
-	// Set Target
-	tgt := vegeta.Target{
-		Method: params.Target.Method,
-		URL:    params.Target.URL,
-		Header: hdr,
-	}
-
-	opts := &AttackOpts{
-		Name:      id,
-		Target:    tgt,
-		Insecure:  params.Insecure,
-		Duration:  dur,
-		Timeout:   timeout,
-		Rate:      rate,
-		Redirects: int(params.Redirects),
-		MaxBody:   params.MaxBody,
-		Keepalive: params.Keepalive,
-		Resolvers: resolvers,
-	}
-	opts.HTTP2 = params.Http2
-	opts.H2c = params.H2c
-	opts.Workers = uint64(params.Workers)
-
-	return opts, nil
 }
