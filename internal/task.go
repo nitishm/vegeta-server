@@ -9,8 +9,9 @@ import (
 	"github.com/tsenart/vegeta/lib"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
-	"vegeta-server/internal/app/server/models"
+	"vegeta-server/internal/models"
 )
 
 type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
@@ -56,6 +57,7 @@ func newAttackContext() attackContext {
 }
 
 type task struct {
+	mu     *sync.RWMutex
 	ctx    attackContext
 	id     string
 	params models.AttackParams
@@ -65,6 +67,7 @@ type task struct {
 func NewTask(params models.AttackParams) *task {
 	id := uuid.NewV4().String()
 	return &task{
+		&sync.RWMutex{},
 		newAttackContext(),
 		id,
 		params,
@@ -77,6 +80,8 @@ func (t *task) Run(fn AttackFunc) error {
 		return fmt.Errorf("cannot run task %s with status %s", t.id, t.status)
 	}
 
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.status = models.AttackResponseStatusRunning
 
 	go run(t, fn)
@@ -89,6 +94,8 @@ func (t *task) Complete() error {
 		return fmt.Errorf("cannot mark completed for task %s with status %s", t.id, t.status)
 	}
 
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.status = models.AttackResponseStatusCompleted
 
 	return nil
@@ -99,6 +106,9 @@ func (t *task) Cancel() error {
 		return fmt.Errorf("cannot cancel task %s with status %s", t.id, t.status)
 	}
 
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
 	t.ctx.cancelFn()
 
 	t.status = models.AttackResponseStatusCanceled
@@ -107,24 +117,33 @@ func (t *task) Cancel() error {
 }
 
 func (t *task) Fail() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.status = models.AttackResponseStatusFailed
 	return nil
 }
 
 func (t *task) ID() string {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 	return t.id
 }
 
 func (t *task) Status() models.AttackStatus {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 	return t.status
 }
 
 func (t *task) Params() models.AttackParams {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 	return t.params
 }
 
 func run(t *task, fn AttackFunc) error {
-	opts, err := attackOptsFromModel(t.id, t.params)
+
+	opts, err := attackOptsFromModel(t.ID(), t.Params())
 	if err != nil {
 		return err
 	}

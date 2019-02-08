@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"net/http"
-	"vegeta-server/internal/app/server/models"
+	"vegeta-server/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

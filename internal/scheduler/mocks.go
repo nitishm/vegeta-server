@@ -2,7 +2,7 @@ package scheduler
 
 import (
 	"fmt"
-	"vegeta-server/internal/app/server/models"
+	"vegeta-server/internal/models"
 )
 
 type MockScheduler struct {

@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"os"
 	"os/signal"
 	"runtime"
 	"vegeta-server/internal"
-	"vegeta-server/internal/app/dispatcher"
-	"vegeta-server/internal/app/scheduler"
-	"vegeta-server/internal/app/server/endpoints"
+	"vegeta-server/internal/dispatcher"
+	"vegeta-server/internal/http/endpoints"
+	"vegeta-server/internal/scheduler"
 
 	log "github.com/sirupsen/logrus"
 
@@ -22,9 +23,10 @@ var (
 )
 
 var (
-	ip   = kingpin.Flag("ip", "Server IP Address.").Default("localhost").String()
-	port = kingpin.Flag("port", "Server Port.").Default("8000").String()
-	v    = kingpin.Flag("version", "Version Info").Short('v').Bool()
+	ip    = kingpin.Flag("ip", "Server IP Address.").Default("localhost").String()
+	port  = kingpin.Flag("port", "Server Port.").Default("8000").String()
+	v     = kingpin.Flag("version", "Version Info").Short('v').Bool()
+	debug = kingpin.Flag("debug", "Enabled Debug").Bool()
 )
 
 func main() {
@@ -39,6 +41,10 @@ func main() {
 
 		os.Exit(0)
 		return
+	}
+
+	if !*debug {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	quit := make(chan struct{})

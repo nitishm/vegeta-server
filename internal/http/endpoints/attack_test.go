@@ -10,8 +10,8 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
-	"vegeta-server/internal/app/scheduler"
-	"vegeta-server/internal/app/server/models"
+	"vegeta-server/internal/models"
+	"vegeta-server/internal/scheduler"
 )
 
 func setupAttackResponses(n int) map[string]*models.AttackResponse {

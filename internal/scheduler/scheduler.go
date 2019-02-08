@@ -2,8 +2,8 @@ package scheduler
 
 import (
 	"vegeta-server/internal"
-	"vegeta-server/internal/app/dispatcher"
-	"vegeta-server/internal/app/server/models"
+	"vegeta-server/internal/dispatcher"
+	"vegeta-server/internal/models"
 )
 
 type SchedulerFn func(dispatcher.IDispatcher, chan internal.ITask, chan struct{})

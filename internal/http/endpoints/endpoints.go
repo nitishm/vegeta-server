@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"github.com/gin-gonic/gin"
-	"vegeta-server/internal/app/scheduler"
+	"vegeta-server/internal/scheduler"
 )
 
 type Endpoints struct {
