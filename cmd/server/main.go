@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"vegeta-server/internal"
 	"vegeta-server/internal/dispatcher"
-	"vegeta-server/internal/http/endpoints"
+	"vegeta-server/internal/endpoints"
 	"vegeta-server/internal/scheduler"
 
 	log "github.com/sirupsen/logrus"
