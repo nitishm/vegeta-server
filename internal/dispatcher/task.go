@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tsenart/vegeta/lib"
 	"sync"
+	"time"
 	"vegeta-server/internal/models"
 )
 
@@ -37,11 +38,15 @@ func newAttackContext() attackContext {
 }
 
 type task struct {
-	mu     *sync.RWMutex
-	ctx    attackContext
+	mu  *sync.RWMutex
+	ctx attackContext
+
 	id     string
 	params models.AttackParams
 	status models.AttackStatus
+
+	createdAt time.Time
+	updatedAt time.Time
 }
 
 func NewTask(params models.AttackParams) *task {
@@ -52,9 +57,16 @@ func NewTask(params models.AttackParams) *task {
 		id,
 		params,
 		models.AttackResponseStatusScheduled,
+		time.Now(),
+		time.Now(),
 	}
 	t.log(nil).Debug("creating new task")
 	return t
+}
+
+func (t *task) update(status models.AttackStatus) {
+	t.status = status
+	t.updatedAt = time.Now()
 }
 
 func (t *task) Run(fn attackFunc) error {
@@ -79,7 +91,7 @@ func (t *task) Complete() error {
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.status = models.AttackResponseStatusCompleted
+	t.update(models.AttackResponseStatusCompleted)
 	t.log(nil).Debug("completed")
 
 	return nil
@@ -93,7 +105,7 @@ func (t *task) Cancel() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.ctx.cancelFn()
-	t.status = models.AttackResponseStatusCanceled
+	t.update(models.AttackResponseStatusCanceled)
 	t.log(nil).Debug("canceled")
 
 	return nil
@@ -102,7 +114,7 @@ func (t *task) Cancel() error {
 func (t *task) Fail() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.status = models.AttackResponseStatusFailed
+	t.update(models.AttackResponseStatusFailed)
 	t.log(nil).Error("failed")
 	return nil
 }
