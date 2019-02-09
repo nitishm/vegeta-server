@@ -2,23 +2,23 @@ package endpoints
 
 import (
 	"github.com/gin-gonic/gin"
-	"vegeta-server/internal/scheduler"
+	"vegeta-server/internal/dispatcher"
 )
 
 type Endpoints struct {
-	scheduler scheduler.IScheduler
+	dispatcher dispatcher.IDispatcher
 }
 
-func NewEndpoints(s scheduler.IScheduler) *Endpoints {
+func NewEndpoints(d dispatcher.IDispatcher) *Endpoints {
 	return &Endpoints{
-		s,
+		d,
 	}
 }
 
-func SetupRouter(s scheduler.IScheduler) *gin.Engine {
+func SetupRouter(d dispatcher.IDispatcher) *gin.Engine {
 	router := gin.Default()
 
-	e := NewEndpoints(s)
+	e := NewEndpoints(d)
 
 	// api/v1 router group
 	v1 := router.Group("/api/v1")

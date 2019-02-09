@@ -6,10 +6,9 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"vegeta-server/internal"
 	"vegeta-server/internal/dispatcher"
 	"vegeta-server/internal/endpoints"
-	"vegeta-server/internal/scheduler"
+	"vegeta-server/pkg/vegeta"
 
 	log "github.com/sirupsen/logrus"
 
@@ -43,22 +42,24 @@ func main() {
 		return
 	}
 
-	if !*debug {
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+		gin.SetMode(gin.DebugMode)
+	} else {
 		gin.SetMode(gin.ReleaseMode)
+		gin.DisableConsoleColor()
 	}
 
 	quit := make(chan struct{})
+	defer close(quit)
 
-	scheduler := scheduler.NewScheduler(
-		dispatcher.NewDispatcher(
-			internal.DefaultAttackFn,
-		),
-		scheduler.DefaultSchedulerFn,
+	d := dispatcher.NewDispatcher(
+		vegeta.VegetaAttackFn,
 	)
 
-	go scheduler.Run(quit)
+	go d.Run(quit)
 
-	engine := endpoints.SetupRouter(scheduler)
+	engine := endpoints.SetupRouter(d)
 
 	sig := make(chan os.Signal, 1)
 
