@@ -25,14 +25,14 @@ type reporter struct {
 	db models.IAttackStore
 }
 
-func NewReporter(db models.IAttackStore) *reporter {
+func NewReporter(db models.IAttackStore) *reporter { //nolint: golint
 	return &reporter{
 		db,
 	}
 }
 
 func (r *reporter) Get(id string) (string, error) {
-	attack, err := r.db.GetById(id)
+	attack, err := r.db.GetByID(id)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +59,7 @@ func (r *reporter) GetAll() []string {
 }
 
 func (r *reporter) GetInFormat(id string, formats vegeta.Format) (string, error) {
-	attack, err := r.db.GetById(id)
+	attack, err := r.db.GetByID(id)
 	if err != nil {
 		return "", err
 	}

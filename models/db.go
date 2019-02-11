@@ -11,8 +11,8 @@ type IAttackStore interface {
 
 	// GetAll items
 	GetAll() []AttackDetails
-	// GetById gets an item by its ID
-	GetById(string) (AttackDetails, error)
+	// GetByID gets an item by its ID
+	GetByID(string) (AttackDetails, error)
 
 	// Update multiple fields in an item
 	Update(string, AttackDetails) error
@@ -52,7 +52,7 @@ func (tm TaskMap) GetAll() []AttackDetails {
 	return attacks
 }
 
-func (tm TaskMap) GetById(id string) (AttackDetails, error) {
+func (tm TaskMap) GetByID(id string) (AttackDetails, error) {
 	mu.RLock()
 	defer mu.RUnlock()
 

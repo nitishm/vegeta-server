@@ -11,7 +11,7 @@ import (
 func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
 	resp := e.reporter.GetAll()
 
-	var jsonReports []models.JSONReportResponse
+	jsonReports := make([]models.JSONReportResponse, 0)
 
 	for _, report := range resp {
 		var jsonReport models.JSONReportResponse

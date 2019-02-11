@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/satori/go.uuid"
+
+	uuid "github.com/satori/go.uuid"
+
 	log "github.com/sirupsen/logrus"
 	vlib "github.com/tsenart/vegeta/lib"
+
 	"io"
 	"io/ioutil"
 	"sync"
@@ -50,7 +53,7 @@ type task struct {
 	updateCh chan models.AttackDetails
 }
 
-func NewTask(updateCh chan models.AttackDetails, params models.AttackParams) *task {
+func NewTask(updateCh chan models.AttackDetails, params models.AttackParams) *task { //nolint: golint
 	id := uuid.NewV4().String()
 	t := &task{
 		&sync.RWMutex{},
@@ -94,7 +97,7 @@ func (t *task) Run(fn attackFunc) error {
 
 	t.log(nil).Debug("running")
 
-	go run(t, fn)
+	go run(t, fn) //nolint: errcheck
 
 	return nil
 }
@@ -178,7 +181,7 @@ loop:
 			if !ok {
 				break loop
 			}
-			if err := enc.Encode(r); err != nil {
+			if err = enc.Encode(r); err != nil {
 				_ = t.Fail()
 			}
 		case <-t.ctx.Done():

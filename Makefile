@@ -14,6 +14,7 @@ build: deps fmt
 clean:
 	rm -f coverage.txt
 	rm -rf bin
+	rm -rf vendor
 
 deps:
 	${GO} mod vendor
@@ -38,7 +39,7 @@ validate:
 	golangci-lint run
 
 lint:
-	golint
+	golint ./...
 
 ineffassign:
 	ineffassign .

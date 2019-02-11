@@ -2,8 +2,10 @@ package dispatcher
 
 import (
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	vlib "github.com/tsenart/vegeta/lib"
+
 	"sync"
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
@@ -29,7 +31,7 @@ type dispatcher struct {
 	db             models.IAttackStore
 }
 
-func NewDispatcher(db models.IAttackStore, fn attackFunc) *dispatcher {
+func NewDispatcher(db models.IAttackStore, fn attackFunc) *dispatcher { //nolint:golint
 	d := &dispatcher{
 		&sync.RWMutex{},
 		make(map[string]ITask),

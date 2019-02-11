@@ -1,9 +1,10 @@
 package endpoints
 
 import (
-	"github.com/gin-gonic/gin"
 	"vegeta-server/internal/dispatcher"
 	"vegeta-server/internal/reporter"
+
+	gin "github.com/gin-gonic/gin"
 )
 
 type Endpoints struct {

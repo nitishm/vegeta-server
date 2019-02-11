@@ -25,7 +25,7 @@ type AttackParams struct {
 	Timeout   string `json:"timeout,omitempty"`
 
 	H2c       bool `json:"h2c,omitempty"`
-	Http2     bool `json:"http2,omitempty"`
+	HTTP2     bool `json:"http2,omitempty"`
 	Insecure  bool `json:"insecure,omitempty"`
 	Keepalive bool `json:"keepalive,omitempty"`
 

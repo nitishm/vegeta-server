@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"os"
 	"os/signal"
 	"runtime"
@@ -12,9 +11,11 @@ import (
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
 
+	gin "github.com/gin-gonic/gin"
+
 	log "github.com/sirupsen/logrus"
 
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
@@ -59,7 +60,7 @@ func main() {
 
 	d := dispatcher.NewDispatcher(
 		db,
-		vegeta.VegetaAttackFn,
+		vegeta.AttackFn,
 	)
 
 	r := reporter.NewReporter(db)
@@ -73,7 +74,7 @@ func main() {
 	signal.Notify(sig, os.Interrupt)
 	go func() {
 		for {
-			select {
+			select { //nolint: megacheck
 			case <-sig:
 				quit <- struct{}{}
 			}

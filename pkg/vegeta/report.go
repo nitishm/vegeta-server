@@ -3,16 +3,17 @@ package vegeta
 import (
 	"bytes"
 	"fmt"
-	"github.com/tsenart/vegeta/lib"
 	"io"
+
+	vegeta "github.com/tsenart/vegeta/lib"
 )
 
 type Format string
 
 const (
 	JSONFormat      Format = "json"
-	HistogramFormat        = "histogram"
-	TextFormat             = "text"
+	HistogramFormat Format = "histogram"
+	TextFormat      Format = "text"
 )
 
 func CreateReportFromReader(reader io.Reader, format Format) (string, error) {
@@ -45,10 +46,8 @@ decode:
 	case JSONFormat:
 		// Create a new reporter with the metrics
 		rep = vegeta.NewJSONReporter(&m)
-		break
 	case TextFormat:
 		rep = vegeta.NewTextReporter(&m)
-		break
 	//case HistogramFormat:
 	//	var hist vegeta.Histogram
 	//	if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {
