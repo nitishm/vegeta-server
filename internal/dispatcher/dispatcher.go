@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
 	"sync"
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
