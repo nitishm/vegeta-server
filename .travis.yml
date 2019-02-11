@@ -18,8 +18,7 @@ script:
   - make lint
   - make validate
   - make ineffassign
-  - make update-deps
-  - GO111MODULE=on go test -covermode=count -coverprofile=profile.cov .
+  - make test
 
 after_script:
   - goveralls -coverprofile=profile.cov -service=travis-ci

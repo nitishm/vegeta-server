@@ -23,14 +23,13 @@ deps:
 update-deps:
 	${GO} mod verify
 	${GO} mod tidy
-	rm -rf vendor
-	${GO} mod vendor
 
 install:
 	$(shell ./scripts/make-install.sh)
 
 test:
 	${GO} test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+	${GO} test -covermode=count -coverprofile=profile.cov ./...
 
 fmt:
 	${GO} fmt ./...
