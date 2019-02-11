@@ -48,6 +48,7 @@ decode:
 		rep = vegeta.NewJSONReporter(&m)
 	case TextFormat:
 		rep = vegeta.NewTextReporter(&m)
+	// TODO: Figure out how to provide historgram report
 	//case HistogramFormat:
 	//	var hist vegeta.Histogram
 	//	if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {

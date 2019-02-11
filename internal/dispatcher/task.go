@@ -22,7 +22,7 @@ type ITask interface {
 	Status() models.AttackStatus
 	Params() models.AttackParams
 
-	Run(attackFunc) error
+	Run(vegeta.AttackFunc) error
 	Complete(io.Reader) error
 	Cancel() error
 	Fail() error
@@ -85,7 +85,7 @@ func (t *task) update(status models.AttackStatus, result io.Reader) {
 	t.updateCh <- details
 }
 
-func (t *task) Run(fn attackFunc) error {
+func (t *task) Run(fn vegeta.AttackFunc) error {
 	if t.status != models.AttackResponseStatusScheduled {
 		return fmt.Errorf("cannot run task %s with status %s", t.id, t.status)
 	}
@@ -161,7 +161,8 @@ func (t *task) Params() models.AttackParams {
 	return t.params
 }
 
-func run(t *task, fn attackFunc) error {
+// TODO: Remove dependency on vegeta lib. Move functionality to pkg/vegeta package.
+func run(t *task, fn vegeta.AttackFunc) error {
 	opts, err := vegeta.NewAttackOptsFromAttackParams(t.id, t.params)
 	if err != nil {
 		return err

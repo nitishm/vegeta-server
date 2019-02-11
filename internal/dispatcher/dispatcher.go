@@ -4,14 +4,10 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	vlib "github.com/tsenart/vegeta/lib"
-
 	"sync"
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
 )
-
-type attackFunc func(*vegeta.AttackOpts) <-chan *vlib.Result
 
 type IDispatcher interface {
 	Run(chan struct{})
@@ -25,13 +21,13 @@ type IDispatcher interface {
 type dispatcher struct {
 	mu             *sync.RWMutex
 	tasks          map[string]ITask
-	attackFn       attackFunc
+	attackFn       vegeta.AttackFunc
 	newTaskCh      chan ITask
 	attackUpdateCh chan models.AttackDetails
 	db             models.IAttackStore
 }
 
-func NewDispatcher(db models.IAttackStore, fn attackFunc) *dispatcher { //nolint:golint
+func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { //nolint:golint
 	d := &dispatcher{
 		&sync.RWMutex{},
 		make(map[string]ITask),

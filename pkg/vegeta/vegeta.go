@@ -4,6 +4,8 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
+type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
+
 func AttackFn(opts *AttackOpts) <-chan *vegeta.Result {
 	atk := vegeta.NewAttacker(
 		vegeta.Redirects(opts.Redirects),

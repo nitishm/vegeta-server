@@ -9,6 +9,7 @@ import (
 )
 
 func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
+	//TODO: Provide format query option.
 	resp := e.reporter.GetAll()
 
 	jsonReports := make([]models.JSONReportResponse, 0)
@@ -34,6 +35,7 @@ func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
 }
 
 func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
+	//TODO: Provide format query option.
 	id := c.Param("attackID")
 	resp, err := e.reporter.Get(id)
 	if err != nil {
