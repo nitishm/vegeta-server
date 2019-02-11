@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/tsenart/vegeta/lib"
+	vlib "github.com/tsenart/vegeta/lib"
+	"io"
+	"io/ioutil"
 	"sync"
-	"time"
-	"vegeta-server/internal/models"
+	"vegeta-server/models"
+	"vegeta-server/pkg/vegeta"
 )
 
 type ITask interface {
@@ -18,7 +20,7 @@ type ITask interface {
 	Params() models.AttackParams
 
 	Run(attackFunc) error
-	Complete() error
+	Complete(io.Reader) error
 	Cancel() error
 	Fail() error
 }
@@ -45,11 +47,10 @@ type task struct {
 	params models.AttackParams
 	status models.AttackStatus
 
-	createdAt time.Time
-	updatedAt time.Time
+	updateCh chan models.AttackDetails
 }
 
-func NewTask(params models.AttackParams) *task {
+func NewTask(updateCh chan models.AttackDetails, params models.AttackParams) *task {
 	id := uuid.NewV4().String()
 	t := &task{
 		&sync.RWMutex{},
@@ -57,16 +58,28 @@ func NewTask(params models.AttackParams) *task {
 		id,
 		params,
 		models.AttackResponseStatusScheduled,
-		time.Now(),
-		time.Now(),
+		updateCh,
 	}
 	t.log(nil).Debug("creating new task")
 	return t
 }
 
-func (t *task) update(status models.AttackStatus) {
+func (t *task) update(status models.AttackStatus, result io.Reader) {
 	t.status = status
-	t.updatedAt = time.Now()
+	details := models.AttackDetails{
+		AttackInfo: models.AttackInfo{
+			ID:     t.id,
+			Status: t.status,
+			Params: t.params,
+		},
+	}
+
+	if result != nil {
+		buf, _ := ioutil.ReadAll(result)
+		details.Result = buf
+	}
+
+	t.updateCh <- details
 }
 
 func (t *task) Run(fn attackFunc) error {
@@ -76,7 +89,9 @@ func (t *task) Run(fn attackFunc) error {
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.status = models.AttackResponseStatusRunning
+
+	t.update(models.AttackResponseStatusRunning, nil)
+
 	t.log(nil).Debug("running")
 
 	go run(t, fn)
@@ -84,14 +99,16 @@ func (t *task) Run(fn attackFunc) error {
 	return nil
 }
 
-func (t *task) Complete() error {
+func (t *task) Complete(result io.Reader) error {
 	if t.status != models.AttackResponseStatusRunning {
 		return fmt.Errorf("cannot mark completed for task %s with status %s", t.id, t.status)
 	}
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.update(models.AttackResponseStatusCompleted)
+
+	t.update(models.AttackResponseStatusCompleted, result)
+
 	t.log(nil).Debug("completed")
 
 	return nil
@@ -105,7 +122,9 @@ func (t *task) Cancel() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.ctx.cancelFn()
-	t.update(models.AttackResponseStatusCanceled)
+
+	t.update(models.AttackResponseStatusCanceled, nil)
+
 	t.log(nil).Debug("canceled")
 
 	return nil
@@ -114,7 +133,9 @@ func (t *task) Cancel() error {
 func (t *task) Fail() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.update(models.AttackResponseStatusFailed)
+
+	t.update(models.AttackResponseStatusFailed, nil)
+
 	t.log(nil).Error("failed")
 	return nil
 }
@@ -138,7 +159,7 @@ func (t *task) Params() models.AttackParams {
 }
 
 func run(t *task, fn attackFunc) error {
-	opts, err := models.NewAttackOptsFromAttackParams(t.id, t.params)
+	opts, err := vegeta.NewAttackOptsFromAttackParams(t.id, t.params)
 	if err != nil {
 		return err
 	}
@@ -149,7 +170,7 @@ func run(t *task, fn attackFunc) error {
 	}
 
 	buf := bytes.NewBuffer(nil)
-	enc := vegeta.NewEncoder(buf)
+	enc := vlib.NewEncoder(buf)
 loop:
 	for {
 		select {
@@ -166,14 +187,8 @@ loop:
 		}
 	}
 
-	// Write results to reporter channel
-	//t.resCh <- &Result{
-	//	entry.uuid,
-	//	buf,
-	//}
-
 	// Mark attack as completed
-	err = t.Complete()
+	err = t.Complete(buf)
 	if err != nil {
 		log.WithError(err).Error("Failed to Complete")
 		_ = t.Fail()

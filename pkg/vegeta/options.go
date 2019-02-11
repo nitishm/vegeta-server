@@ -1,4 +1,4 @@
-package models
+package vegeta
 
 import (
 	"github.com/tsenart/vegeta/lib"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"vegeta-server/models"
 )
 
 // AttackOpts aggregates the attack function command options
@@ -31,7 +32,7 @@ type AttackOpts struct {
 	Resolvers   []string
 }
 
-func NewAttackOptsFromAttackParams(name string, params AttackParams) (*AttackOpts, error) {
+func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*AttackOpts, error) {
 	rate := vegeta.Rate{Freq: int(params.Rate), Per: time.Second}
 
 	// Set Duration

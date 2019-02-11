@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"net/http"
-	"vegeta-server/internal/models"
+	"vegeta-server/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,6 +39,7 @@ func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 				"error":   err.Error(),
 			},
 		)
+		return
 	}
 
 	c.JSON(http.StatusOK, resp)

@@ -2,10 +2,9 @@ package vegeta
 
 import (
 	"github.com/tsenart/vegeta/lib"
-	"vegeta-server/internal/models"
 )
 
-func VegetaAttackFn(opts *models.AttackOpts) <-chan *vegeta.Result {
+func VegetaAttackFn(opts *AttackOpts) <-chan *vegeta.Result {
 	atk := vegeta.NewAttacker(
 		vegeta.Redirects(opts.Redirects),
 		vegeta.Timeout(opts.Timeout),

@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"vegeta-server/internal/dispatcher"
 	"vegeta-server/internal/endpoints"
+	"vegeta-server/internal/reporter"
+	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
 
 	log "github.com/sirupsen/logrus"
@@ -53,13 +55,18 @@ func main() {
 	quit := make(chan struct{})
 	defer close(quit)
 
+	db := models.NewTaskMap()
+
 	d := dispatcher.NewDispatcher(
+		db,
 		vegeta.VegetaAttackFn,
 	)
 
+	r := reporter.NewReporter(db)
+
 	go d.Run(quit)
 
-	engine := endpoints.SetupRouter(d)
+	engine := endpoints.SetupRouter(d, r)
 
 	sig := make(chan os.Signal, 1)
 

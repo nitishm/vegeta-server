@@ -3,12 +3,13 @@ package dispatcher
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"github.com/tsenart/vegeta/lib"
+	vlib "github.com/tsenart/vegeta/lib"
 	"sync"
-	"vegeta-server/internal/models"
+	"vegeta-server/models"
+	"vegeta-server/pkg/vegeta"
 )
 
-type attackFunc func(*models.AttackOpts) <-chan *vegeta.Result
+type attackFunc func(*vegeta.AttackOpts) <-chan *vlib.Result
 
 type IDispatcher interface {
 	Run(chan struct{})
@@ -20,62 +21,53 @@ type IDispatcher interface {
 }
 
 type dispatcher struct {
-	mu       *sync.RWMutex
-	tasks    map[string]ITask
-	attackFn attackFunc
-	taskCh   chan ITask
+	mu             *sync.RWMutex
+	tasks          map[string]ITask
+	attackFn       attackFunc
+	newTaskCh      chan ITask
+	attackUpdateCh chan models.AttackDetails
+	db             models.IAttackStore
 }
 
-func NewDispatcher(fn attackFunc) *dispatcher {
+func NewDispatcher(db models.IAttackStore, fn attackFunc) *dispatcher {
 	d := &dispatcher{
 		&sync.RWMutex{},
 		make(map[string]ITask),
 		fn,
-		make(chan ITask),
+		make(chan ITask, 10),
+		make(chan models.AttackDetails, 20),
+		db,
 	}
 	d.log(nil).Info("creating new dispatcher")
 	return d
 }
 
-func (d *dispatcher) Run(quit chan struct{}) {
-	defer close(d.taskCh)
-	d.log(nil).Info("starting dispatcher")
-	for {
-		select {
-		case task := <-d.taskCh:
-			fields := log.Fields{
-				"ID":     task.ID(),
-				"Status": task.Status(),
-			}
-
-			d.log(fields).Debug("received task")
-
-			if err := task.Run(d.attackFn); err != nil {
-				d.log(fields).WithError(err).Errorf("failed to run %s", task.ID())
-				continue
-			}
-		case <-quit:
-			d.log(nil).Warning("gracefully shutting down the dispatcher")
-			return
-		}
-	}
-}
-
 func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	task := NewTask(params)
-
+	task := NewTask(d.attackUpdateCh, params)
+	id := task.ID()
+	status := task.Status()
 	fields := log.Fields{
-		"ID":     task.ID(),
-		"Status": task.Status(),
+		"ID":     id,
+		"Status": status,
 	}
 
 	// Track the task
 	d.tasks[task.ID()] = task
 
+	// Add to database
+	_ = d.db.Add(models.AttackDetails{
+		AttackInfo: models.AttackInfo{
+			ID:     id,
+			Status: status,
+			Params: params,
+		},
+		Result: nil,
+	})
+
 	d.log(fields).Info("dispatching new attack")
-	d.taskCh <- task
+	d.newTaskCh <- task
 
 	return &models.AttackResponse{
 		ID:     task.ID(),
@@ -162,4 +154,39 @@ func (d *dispatcher) log(fields map[string]interface{}) *log.Entry {
 	}
 
 	return l
+}
+
+func (d *dispatcher) Run(quit chan struct{}) {
+	defer close(d.newTaskCh)
+	d.log(nil).Info("starting dispatcher")
+	for {
+		select {
+		case task := <-d.newTaskCh:
+			fields := log.Fields{
+				"ID":     task.ID(),
+				"Status": task.Status(),
+			}
+
+			d.log(fields).Debug("received task")
+
+			if err := task.Run(d.attackFn); err != nil {
+				d.log(fields).WithError(err).Errorf("failed to run %s", task.ID())
+				continue
+			}
+		case updatedAttack := <-d.attackUpdateCh:
+			fields := log.Fields{
+				"ID":     updatedAttack.ID,
+				"Status": updatedAttack.Status,
+			}
+
+			if err := d.db.Update(updatedAttack.ID, updatedAttack); err != nil {
+				d.log(fields).WithError(err).Error("attack update error")
+				continue
+			}
+			d.log(fields).Debug("received update for attack")
+		case <-quit:
+			d.log(nil).Warning("gracefully shutting down the dispatcher")
+			return
+		}
+	}
 }
