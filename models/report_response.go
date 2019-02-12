@@ -1,6 +1,7 @@
 package models
 
 type JSONReportResponse struct {
+	ID        string `json:"id"`
 	Latencies struct {
 		Total int `json:"total"`
 		Mean  int `json:"mean"`

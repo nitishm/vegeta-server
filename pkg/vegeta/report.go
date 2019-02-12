@@ -2,8 +2,10 @@ package vegeta
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
+	"vegeta-server/models"
 
 	vegeta "github.com/tsenart/vegeta/lib"
 )
@@ -12,11 +14,11 @@ type Format string
 
 const (
 	JSONFormat      Format = "json"
-	HistogramFormat Format = "histogram"
 	TextFormat      Format = "text"
+	HistogramFormat Format = "histogram"
 )
 
-func CreateReportFromReader(reader io.Reader, format Format) (string, error) {
+func CreateReportFromReader(reader io.Reader, id string, format Format) (string, error) {
 	dec := vegeta.DecoderFor(reader)
 
 	m := vegeta.Metrics{}
@@ -63,6 +65,21 @@ decode:
 	err := rep.Report(buf)
 	if err != nil {
 		return "", err
+	}
+
+	if format == JSONFormat {
+		// Add ID to the report struct
+		var jsonReportResponse models.JSONReportResponse
+		err = json.Unmarshal(buf.Bytes(), &jsonReportResponse)
+		if err != nil {
+			return "", err
+		}
+		jsonReportResponse.ID = id
+		bReport, err := json.Marshal(jsonReportResponse)
+		if err != nil {
+			return "", err
+		}
+		return string(bReport), nil
 	}
 
 	return buf.String(), nil

@@ -38,7 +38,7 @@ func (r *reporter) Get(id string) (string, error) {
 	}
 
 	result := attack.Result
-	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), vegeta.JSONFormat)
+	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), attack.ID, vegeta.JSONFormat)
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func (r *reporter) GetAll() []string {
 	attacks := r.db.GetAll()
 	reports := make([]string, 0)
 	for _, attack := range attacks {
-		report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(attack.Result), vegeta.JSONFormat)
+		report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(attack.Result), attack.ID, vegeta.JSONFormat)
 		if err != nil {
 			continue
 		}
@@ -58,14 +58,14 @@ func (r *reporter) GetAll() []string {
 	return reports
 }
 
-func (r *reporter) GetInFormat(id string, formats vegeta.Format) (string, error) {
+func (r *reporter) GetInFormat(id string, format vegeta.Format) (string, error) {
 	attack, err := r.db.GetByID(id)
 	if err != nil {
 		return "", err
 	}
 
 	result := attack.Result
-	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), vegeta.JSONFormat)
+	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), attack.ID, format)
 	if err != nil {
 		return "", err
 	}
@@ -76,7 +76,7 @@ func (r *reporter) GetAllInFormat(format vegeta.Format) []string {
 	attacks := r.db.GetAll()
 	reports := make([]string, 0)
 	for _, attack := range attacks {
-		report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(attack.Result), format)
+		report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(attack.Result), attack.ID, format)
 		if err != nil {
 			continue
 		}
