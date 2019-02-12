@@ -16,9 +16,10 @@ const (
 	JSONFormat      Format = "json"
 	TextFormat      Format = "text"
 	HistogramFormat Format = "histogram"
+	BinaryFormat Format = "binary"
 )
 
-func CreateReportFromReader(reader io.Reader, id string, format Format) (string, error) {
+func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte, error) {
 	dec := vegeta.DecoderFor(reader)
 
 	m := vegeta.Metrics{}
@@ -33,7 +34,7 @@ decode:
 			if err == io.EOF {
 				break decode
 			}
-			return "", err
+			return nil, err
 		}
 
 		report.Add(&r)
@@ -57,14 +58,14 @@ decode:
 	//		return err
 	//	}
 	default:
-		return "", fmt.Errorf("format %s not supported", format)
+		return nil, fmt.Errorf("format %s not supported", format)
 	}
 
 	var b []byte
 	buf := bytes.NewBuffer(b)
 	err := rep.Report(buf)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if format == JSONFormat {
@@ -72,15 +73,11 @@ decode:
 		var jsonReportResponse models.JSONReportResponse
 		err = json.Unmarshal(buf.Bytes(), &jsonReportResponse)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		jsonReportResponse.ID = id
-		bReport, err := json.Marshal(jsonReportResponse)
-		if err != nil {
-			return "", err
-		}
-		return string(bReport), nil
+		return json.Marshal(jsonReportResponse)
 	}
 
-	return buf.String(), nil
+	return buf.Bytes(), nil
 }

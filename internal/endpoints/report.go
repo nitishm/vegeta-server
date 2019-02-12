@@ -10,35 +10,28 @@ import (
 )
 
 func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
-	format := c.DefaultQuery("format", "json")
-	resp := e.reporter.GetAllInFormat(vegeta.Format(format))
+	resp := e.reporter.GetAll()
 
-	if format == "json" {
-		c.Header("Content-Type", "application/json")
-		jsonReports := make([]models.JSONReportResponse, 0)
+	jsonReports := make([]models.JSONReportResponse, 0)
 
-		for _, report := range resp {
-			var jsonReport models.JSONReportResponse
-			err := json.Unmarshal([]byte(report), &jsonReport)
-			if err != nil {
-				c.JSON(
-					http.StatusInternalServerError,
-					gin.H{
-						"message": "Failed to decode",
-						"code":    http.StatusInternalServerError,
-						"error":   err.Error(),
-					},
-				)
-				return
-			}
-			jsonReports = append(jsonReports, jsonReport)
+	for _, report := range resp {
+		var jsonReport models.JSONReportResponse
+		err := json.Unmarshal(report, &jsonReport)
+		if err != nil {
+			c.JSON(
+				http.StatusInternalServerError,
+				gin.H{
+					"message": "Failed to decode",
+					"code":    http.StatusInternalServerError,
+					"error":   err.Error(),
+				},
+			)
+			return
 		}
-
-		c.JSON(http.StatusOK, jsonReports)
-	} else if format == "text" {
-		c.Header("Content-Type", "text/plain")
-		c.JSON(http.StatusOK, resp)
+		jsonReports = append(jsonReports, jsonReport)
 	}
+
+	c.JSON(http.StatusOK, jsonReports)
 }
 
 func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
@@ -60,7 +53,7 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 	if format == "json" {
 		c.Header("Content-Type", "application/json")
 		var jsonReport models.JSONReportResponse
-		err = json.Unmarshal([]byte(resp), &jsonReport)
+		err = json.Unmarshal(resp, &jsonReport)
 		if err != nil {
 			c.JSON(
 				http.StatusInternalServerError,
@@ -72,10 +65,12 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 			)
 			return
 		}
-
 		c.JSON(http.StatusOK, jsonReport)
 	} else if format == "text" {
 		c.Header("Content-Type", "text/plain")
-		c.JSON(http.StatusOK, resp)
+		c.String(http.StatusOK, "%s", resp)
+	} else if format == "binary" {
+		c.Header("Content-Type", "application/octet-stream")
+		c.Data(http.StatusOK, "application/octet-stream", resp)
 	}
 }
