@@ -138,17 +138,18 @@ curl http://localhost:8000/api/v1/attack/
 ]
 ```
 
-#### View attack report by **Attack ID** - `GET /api/v1/report/<attackID>`
+#### View attack report by **Attack ID** - `GET /api/v1/report/<attackID>[?format=json/text/binary]`
 
 > The report endpoint only returns results for **Completed** attacks
 
-
+**JSON Format**
 ```
-curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483
+curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?format=json
 ```
 
 ```
 {
+    "id": "d9788d4c-1bd7-48e9-92e4-f8d53603a483",
     "latencies": {
         "total": 44164990,
         "mean": 2944332,
@@ -180,6 +181,23 @@ curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483
 }
 ```
 
+
+**Text Format**
+```
+curl http://localhost:8000/api/v1/report/9aea25c6-3dcf-4f14-808f-5e499d1d0074?format=text
+```
+
+```
+Requests      [total, rate]            200, 100.47
+Duration      [total, attack, wait]    1.993288918s, 1.990719s, 2.569918ms
+Latencies     [mean, 50, 95, 99, max]  2.136603ms, 1.642011ms, 4.151042ms, 9.884504ms, 15.338328ms
+Bytes In      [total, mean]            0, 0.00
+Bytes Out     [total, mean]            0, 0.00
+Success       [ratio]                  0.00%
+Status Codes  [code:count]             404:200  
+Error Set:
+404 Not Found
+```
 #### List all attack reports - `GET api/v1/report`
 
 ```
@@ -253,13 +271,29 @@ curl http://localhost:8000/api/v1/report/
 
 ### Running tests
 
-Tests can be run using the `Makefile` target `test`
+Tests can be run using the `test` target.
 
 ```make test```
 
 ## Contributing
 
 Link to [CONTRIBUTING.md](https://github.com/nitishm/vegeta-server/blob/master/CONTRIBUTING.md)
+
+### Project Structure
+- `/`: Extraneous setup and configuration files. No go code should exist at this level.
+- `/cmd/server`: Comprises of `package main` serving as an entry point to the code.
+
+- `/models`: Includes the model definitions used by the DB and the API endpoints.
+    - `/db.go`: Provides the storage interface, which is implemented by the configured database.
+
+- `/internal`: Internal only packages used by the server to run attacks and serve reports.
+    - `/dispatcher`: Defines and implements the dispatcher interface, with the primary responsibility to carry out concurrent attacks.
+    - `/reporter`: Defines and implements the reporter interface, with the primary responsibility to generate reports from previously completed attacks, in supported formats (JSON/Text/Binary).
+    - `/endpoints`: Responsible for defining and registering the REST API endpoint handlers.
+
+- `/pkg/vegeta`: [Vegeta library](https://github.com/tsenart/vegeta/tree/master/lib)  specific, wrapper methods and definitions. (*Keep these isolated from the internals of the server, to support more load-testing tools/libraries in the future.*)
+
+- `/scripts`: Helper installation scripts.
 
 ## Road-map
 
