@@ -16,7 +16,7 @@ const (
 	JSONFormat      Format = "json"
 	TextFormat      Format = "text"
 	HistogramFormat Format = "histogram"
-	BinaryFormat Format = "binary"
+	BinaryFormat    Format = "binary"
 )
 
 func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte, error) {

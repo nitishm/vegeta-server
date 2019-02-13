@@ -44,9 +44,7 @@ Flags:
 ./bin/vegeta-server --ip=localhost --port=8000 --debug
 ```
 
-> **Bonus**
-> 
-> The `localhost:8000` example can be also started using the `run` target, which handles the build and starts the server.
+> Try it out using `make run`
 > ```
 > make run
 > 
@@ -62,7 +60,7 @@ Flags:
 curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://localhost:8000/api/v1/attack","scheme": "http"}}' http://localhost:8000/api/v1/attack
 ```
  
-```
+```json
 {
   "id": "494f98a2-7165-4d1b-8834-3226b49ab582",
   "status": "scheduled",
@@ -85,7 +83,7 @@ curl --header "Content-Type: application/json" --request POST --data '{"rate": 5
 curl http://localhost:8000/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 ```
 
-```
+```json
 {
   "id": "494f98a2-7165-4d1b-8834-3226b49ab582",
   "status": "completed",
@@ -107,7 +105,7 @@ curl http://localhost:8000/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 curl http://localhost:8000/api/v1/attack/
 ```
 
-```
+```json
 [
     {
         "id": "494f98a2-7165-4d1b-8834-3226b49ab582",
@@ -142,12 +140,12 @@ curl http://localhost:8000/api/v1/attack/
 
 > The report endpoint only returns results for **Completed** attacks
 
-**JSON Format**
+- *JSON Format*
 ```
 curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?format=json
 ```
 
-```
+```json
 {
     "id": "d9788d4c-1bd7-48e9-92e4-f8d53603a483",
     "latencies": {
@@ -181,13 +179,12 @@ curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?fo
 }
 ```
 
-
-**Text Format**
+- *Text Format*
 ```
 curl http://localhost:8000/api/v1/report/9aea25c6-3dcf-4f14-808f-5e499d1d0074?format=text
 ```
 
-```
+```text
 Requests      [total, rate]            200, 100.47
 Duration      [total, attack, wait]    1.993288918s, 1.990719s, 2.569918ms
 Latencies     [mean, 50, 95, 99, max]  2.136603ms, 1.642011ms, 4.151042ms, 9.884504ms, 15.338328ms
@@ -204,7 +201,7 @@ Error Set:
 curl http://localhost:8000/api/v1/report/
 ```
 
-```
+```json
 [
     {
         "latencies": {
@@ -271,9 +268,9 @@ curl http://localhost:8000/api/v1/report/
 
 ### Running tests
 
-Tests can be run using the `test` target.
-
-```make test```
+```
+make test
+```
 
 ## Contributing
 
