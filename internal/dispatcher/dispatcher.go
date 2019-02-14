@@ -10,12 +10,18 @@ import (
 	"vegeta-server/pkg/vegeta"
 )
 
+// IDispatcher provides an interface for attack dispatch operations.
 type IDispatcher interface {
+	// Run the dispatcher event loop
 	Run(chan struct{})
+	// Dispatch an attack. Used by the client/handler
 	Dispatch(models.AttackParams) *models.AttackResponse
+	// Cancel a scheduled/on-going attack
 	Cancel(string, bool) (*models.AttackResponse, error)
 
+	// Get the attack status, params and ID for a single attack
 	Get(string) (*models.AttackResponse, error)
+	// List the attack status, params and ID for all submitted attacks.
 	List() []*models.AttackResponse
 }
 
@@ -28,7 +34,8 @@ type dispatcher struct {
 	db             models.IAttackStore
 }
 
-func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { //nolint:golint
+// NewDispatcher constructs a new instance of the dispatcher object.
+func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { // nolint: golint
 	d := &dispatcher{
 		&sync.RWMutex{},
 		make(map[string]ITask),
@@ -41,6 +48,7 @@ func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { /
 	return d
 }
 
+// Dispatch implements the attack dispatcher method, used by the client to schedule new attacks
 func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -75,6 +83,7 @@ func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse
 	}
 }
 
+// Get an attack by ID
 func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
 	fields := log.Fields{
 		"ID": id,
@@ -98,6 +107,7 @@ func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
 	return response, nil
 }
 
+// List all submitted attacks
 func (d *dispatcher) List() []*models.AttackResponse {
 	d.log(nil).Debug("getting attack list")
 
@@ -114,6 +124,7 @@ func (d *dispatcher) List() []*models.AttackResponse {
 	return responses
 }
 
+// Cancel an attack by ID.
 func (d *dispatcher) Cancel(id string, cancel bool) (*models.AttackResponse, error) {
 	fields := log.Fields{
 		"ID":       id,
@@ -155,6 +166,9 @@ func (d *dispatcher) log(fields map[string]interface{}) *log.Entry {
 	return l
 }
 
+// Run the dispatcher event loop to dispatch new attacks,
+// receive status updates for scheduled attacks and update the
+// storage.
 func (d *dispatcher) Run(quit chan struct{}) {
 	defer close(d.newTaskCh)
 	d.log(nil).Info("starting dispatcher")

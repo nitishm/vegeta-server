@@ -4,8 +4,11 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
+// AttackFunc provides type used by the attacker class
 type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
 
+// AttackFn provides a func with the AttackFunc signature
+// for the vegeta attacker
 func AttackFn(opts *AttackOpts) <-chan *vegeta.Result {
 	atk := vegeta.NewAttacker(
 		vegeta.Redirects(opts.Redirects),

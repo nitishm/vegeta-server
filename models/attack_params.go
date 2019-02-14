@@ -33,7 +33,7 @@ type AttackParams struct {
 	Headers []AttackHeader `json:"headers,omitempty"`
 }
 
-// AttackParams request target parameters
+// Target request target parameters
 type Target struct {
 	Method string `json:"method,omitempty"`
 	URL    string `json:"URL,omitempty"`
@@ -61,7 +61,7 @@ const (
 	AttackResponseStatusFailed AttackStatus = "failed"
 )
 
-// AttackCancel
+// AttackCancel request body
 type AttackCancel struct {
 	Cancel bool `json:"cancel"`
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetReportEndpoint implements a handler for the GET /api/v1/report endpoint
 func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
 	resp := e.reporter.GetAll()
 
@@ -34,6 +35,7 @@ func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, jsonReports)
 }
 
+// GetReportByIDEndpoint implements a handler for the GET /api/v1/report/<attackID> endpoint
 func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 	id := c.Param("attackID")
 	format := c.DefaultQuery("format", "json")
@@ -50,7 +52,8 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 		return
 	}
 
-	if format == "json" {
+	switch format {
+	case "json":
 		c.Header("Content-Type", "application/json")
 		var jsonReport models.JSONReportResponse
 		err = json.Unmarshal(resp, &jsonReport)
@@ -63,13 +66,12 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 					"error":   err.Error(),
 				},
 			)
-			return
 		}
 		c.JSON(http.StatusOK, jsonReport)
-	} else if format == "text" {
+	case "text":
 		c.Header("Content-Type", "text/plain")
 		c.String(http.StatusOK, "%s", resp)
-	} else if format == "binary" {
+	case "binary":
 		c.Header("Content-Type", "application/octet-stream")
 		c.Data(http.StatusOK, "application/octet-stream", resp)
 	}

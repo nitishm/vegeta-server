@@ -10,15 +10,22 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
+// Format defines a type for the format query param
 type Format string
 
 const (
+	// JSONFormat typedef for query param "json"
 	JSONFormat      Format = "json"
+	// TextFormat typedef for query param "text"
 	TextFormat      Format = "text"
+	// HistogramFormat typedef for query param "histogram"
 	HistogramFormat Format = "histogram"
+	// BinaryFormat typedef for query param "binary"
 	BinaryFormat    Format = "binary"
 )
 
+// CreateReportFromReader takes in an io.Reader with the vegeta gob, encoded result and
+// returns the decoded result as a byte array
 func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte, error) {
 	dec := vegeta.DecoderFor(reader)
 
