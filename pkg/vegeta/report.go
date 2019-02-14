@@ -15,13 +15,13 @@ type Format string
 
 const (
 	// JSONFormat typedef for query param "json"
-	JSONFormat      Format = "json"
+	JSONFormat Format = "json"
 	// TextFormat typedef for query param "text"
-	TextFormat      Format = "text"
+	TextFormat Format = "text"
 	// HistogramFormat typedef for query param "histogram"
 	HistogramFormat Format = "histogram"
 	// BinaryFormat typedef for query param "binary"
-	BinaryFormat    Format = "binary"
+	BinaryFormat Format = "binary"
 )
 
 // CreateReportFromReader takes in an io.Reader with the vegeta gob, encoded result and
@@ -60,10 +60,10 @@ decode:
 		rep = vegeta.NewTextReporter(&m)
 	// TODO: Figure out how to provide historgram report
 	//case HistogramFormat:
-	//	var hist vegeta.Histogram
-	//	if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {
-	//		return err
-	//	}
+	//      var hist vegeta.Histogram
+	//      if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {
+	//              return err
+	//      }
 	default:
 		return nil, fmt.Errorf("format %s not supported", format)
 	}
