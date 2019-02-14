@@ -17,14 +17,22 @@ import (
 	"vegeta-server/pkg/vegeta"
 )
 
+// ITask defines an interface for attack tasks
 type ITask interface {
+	// ID returns the attack task ID
 	ID() string
+	// Status returns the attack task status
 	Status() models.AttackStatus
+	// Params returns the attack task params
 	Params() models.AttackParams
 
+	// Run the attack using the configured attack function.
 	Run(vegeta.AttackFunc) error
+	// Complete changes task status to completed
 	Complete(io.Reader) error
+	// Cancel changes task status to canceled
 	Cancel() error
+	// Fail changes task status to failed
 	Fail() error
 }
 
@@ -53,6 +61,7 @@ type task struct {
 	updateCh chan models.AttackDetails
 }
 
+// NewTask returns a new instance of a task object
 func NewTask(updateCh chan models.AttackDetails, params models.AttackParams) *task { //nolint: golint
 	id := uuid.NewV4().String()
 	t := &task{
@@ -85,6 +94,7 @@ func (t *task) update(status models.AttackStatus, result io.Reader) {
 	t.updateCh <- details
 }
 
+// Run an attack task using the passed in attack function
 func (t *task) Run(fn vegeta.AttackFunc) error {
 	if t.status != models.AttackResponseStatusScheduled {
 		return fmt.Errorf("cannot run task %s with status %s", t.id, t.status)
@@ -102,6 +112,7 @@ func (t *task) Run(fn vegeta.AttackFunc) error {
 	return nil
 }
 
+// Complete marks a task as completed
 func (t *task) Complete(result io.Reader) error {
 	if t.status != models.AttackResponseStatusRunning {
 		return fmt.Errorf("cannot mark completed for task %s with status %s", t.id, t.status)
@@ -117,6 +128,7 @@ func (t *task) Complete(result io.Reader) error {
 	return nil
 }
 
+// Cancel invokes the context cancel and marks a task as canceled
 func (t *task) Cancel() error {
 	if t.status == models.AttackResponseStatusCompleted || t.status == models.AttackResponseStatusFailed {
 		return fmt.Errorf("cannot cancel task %s with status %s", t.id, t.status)
@@ -133,6 +145,7 @@ func (t *task) Cancel() error {
 	return nil
 }
 
+// Fail marks a task as failed
 func (t *task) Fail() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -143,18 +156,21 @@ func (t *task) Fail() error {
 	return nil
 }
 
+// ID returns the task identifier
 func (t *task) ID() string {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	return t.id
 }
 
+// Status returns the latest task status
 func (t *task) Status() models.AttackStatus {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	return t.status
 }
 
+// Params returns a the confgured attack params
 func (t *task) Params() models.AttackParams {
 	t.mu.RLock()
 	defer t.mu.RUnlock()

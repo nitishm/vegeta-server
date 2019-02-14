@@ -10,15 +10,22 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
+// Format defines a type for the format query param
 type Format string
 
 const (
-	JSONFormat      Format = "json"
-	TextFormat      Format = "text"
+	// JSONFormat typedef for query param "json"
+	JSONFormat Format = "json"
+	// TextFormat typedef for query param "text"
+	TextFormat Format = "text"
+	// HistogramFormat typedef for query param "histogram"
 	HistogramFormat Format = "histogram"
-	BinaryFormat    Format = "binary"
+	// BinaryFormat typedef for query param "binary"
+	BinaryFormat Format = "binary"
 )
 
+// CreateReportFromReader takes in an io.Reader with the vegeta gob, encoded result and
+// returns the decoded result as a byte array
 func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte, error) {
 	dec := vegeta.DecoderFor(reader)
 
@@ -53,10 +60,10 @@ decode:
 		rep = vegeta.NewTextReporter(&m)
 	// TODO: Figure out how to provide historgram report
 	//case HistogramFormat:
-	//	var hist vegeta.Histogram
-	//	if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {
-	//		return err
-	//	}
+	//      var hist vegeta.Histogram
+	//      if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {
+	//              return err
+	//      }
 	default:
 		return nil, fmt.Errorf("format %s not supported", format)
 	}

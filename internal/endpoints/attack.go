@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PostAttackEndpoint implements a handler for the POST /api/v1/attack endpoint
 func (e *Endpoints) PostAttackEndpoint(c *gin.Context) {
 	var attackParams models.AttackParams
 	if err := c.ShouldBindJSON(&attackParams); err != nil {
@@ -27,6 +28,7 @@ func (e *Endpoints) PostAttackEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetAttackByIDEndpoint implements a handler for the GET /api/v1/attack/<attackID> endpoint
 func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 	id := c.Param("attackID")
 	resp, err := e.dispatcher.Get(id)
@@ -45,12 +47,14 @@ func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetAttackEndpoint implements a handler for the GET /api/v1/attack endpoint
 func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
 	resp := e.dispatcher.List()
 
 	c.JSON(http.StatusOK, resp)
 }
 
+// PostAttackByIDCancelEndpoint implements a handler for the POST /api/v1/attack/<attackID>/cancel endpoint
 func (e *Endpoints) PostAttackByIDCancelEndpoint(c *gin.Context) {
 	id := c.Param("attackID")
 	var attackCancelParams models.AttackCancel

@@ -33,6 +33,7 @@ type AttackOpts struct {
 	Resolvers   []string
 }
 
+// NewAttackOptsFromAttackParams adapts the models AttackParams to the vegeta specific options.
 func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*AttackOpts, error) {
 	rate := vegeta.Rate{Freq: params.Rate, Per: time.Second}
 
