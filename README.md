@@ -38,6 +38,16 @@ Flags:
       --debug           Enabled Debug
 ```
 
+### Using Docker
+*Build the docker image using local Dockerfile*
+```
+docker build .
+```
+*Run the docker container*
+```
+docker run -d -p 8000:80 --name vegeta {container id}
+```
+
 #### Example 
 *Serve `HTTP` traffic at `0.0.0.0:80/api/v1`*
 ```
