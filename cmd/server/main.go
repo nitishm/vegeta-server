@@ -25,8 +25,8 @@ var (
 )
 
 var (
-	ip    = kingpin.Flag("ip", "Server IP Address.").Default("localhost").String()
-	port  = kingpin.Flag("port", "Server Port.").Default("8000").String()
+	ip    = kingpin.Flag("ip", "Server IP Address.").Default("0.0.0.0").String()
+	port  = kingpin.Flag("port", "Server Port.").Default("80").String()
 	v     = kingpin.Flag("version", "Version Info").Short('v').Bool()
 	debug = kingpin.Flag("debug", "Enabled Debug").Bool()
 )
