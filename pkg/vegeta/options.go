@@ -55,7 +55,11 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 	// Set resolvers
 	resolvers := strings.Split(params.Resolvers, ",")
 
-	// TODO: Set Local Address
+	// Set local address
+	laddr, err := net.ResolveIPAddr("ip", params.Laddr)
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO: Set TLS configuration
 
@@ -79,6 +83,7 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 		MaxBody:   params.MaxBody,
 		Keepalive: params.Keepalive,
 		Resolvers: resolvers,
+		Laddr:  struct { *net.IPAddr }{laddr},
 	}
 	opts.HTTP2 = params.HTTP2
 	opts.H2c = params.H2c
