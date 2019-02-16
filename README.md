@@ -32,16 +32,16 @@ Usage: main [<flags>]
 
 Flags:
       --help            Show context-sensitive help (also try --help-long and --help-man).
-      --ip="localhost"  Server IP Address.
-      --port="8000"     Server Port.
+      --ip="0.0.0.0"  Server IP Address.
+      --port="80"     Server Port.
   -v, --version         Version Info
       --debug           Enabled Debug
 ```
 
 #### Example 
-*Serve `HTTP` traffic at `localhost:8000/api/v1`*
+*Serve `HTTP` traffic at `0.0.0.0:80/api/v1`*
 ```
-./bin/vegeta-server --ip=localhost --port=8000 --debug
+./bin/vegeta-server --ip=0.0.0.0 --port=80 --debug
 ```
 
 > Try it out using `make run`
@@ -57,7 +57,7 @@ Flags:
 #### Submit an attack - `POST api/v1/attack`
 
 ```
-curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://localhost:8000/api/v1/attack","scheme": "http"}}' http://localhost:8000/api/v1/attack
+curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://0.0.0.0:80/api/v1/attack","scheme": "http"}}' http://0.0.0.0:80/api/v1/attack
 ```
  
 ```json
@@ -69,7 +69,7 @@ curl --header "Content-Type: application/json" --request POST --data '{"rate": 5
     "duration": "3s",
     "target": {
       "method": "GET",
-      "URL": "http://localhost:8000/api/v1/attack",
+      "URL": "http://0.0.0.0:80/api/v1/attack",
       "scheme": "http"
     }
   }
@@ -80,7 +80,7 @@ curl --header "Content-Type: application/json" --request POST --data '{"rate": 5
 #### View attack status by **Attack ID** - `GET api/v1/attack/<attackID>`
 
 ```
-curl http://localhost:8000/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
+curl http://0.0.0.0:80/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 ```
 
 ```json
@@ -92,7 +92,7 @@ curl http://localhost:8000/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
     "duration": "3s",
     "target": {
       "method": "GET",
-      "URL": "http://localhost:8000/api/v1/attack",
+      "URL": "http://0.0.0.0:80/api/v1/attack",
       "scheme": "http"
     }
   }
@@ -102,7 +102,7 @@ curl http://localhost:8000/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 #### List all attacks `GET /api/v1/attack`
 
 ```
-curl http://localhost:8000/api/v1/attack/
+curl http://0.0.0.0:80/api/v1/attack/
 ```
 
 ```json
@@ -115,7 +115,7 @@ curl http://localhost:8000/api/v1/attack/
             "duration": "3s",
             "target": {
                 "method": "GET",
-                "URL": "http://localhost:8000/api/v1/attack",
+                "URL": "http://0.0.0.0:80/api/v1/attack",
                 "scheme": "http"
             }
         }
@@ -128,7 +128,7 @@ curl http://localhost:8000/api/v1/attack/
             "duration": "1s",
             "target": {
                 "method": "GET",
-                "URL": "http://localhost:8000/api/v1/attack",
+                "URL": "http://0.0.0.0:80/api/v1/attack",
                 "scheme": "http"
             }
         }
@@ -142,7 +142,7 @@ curl http://localhost:8000/api/v1/attack/
 
 - *JSON Format*
 ```
-curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?format=json
+curl http://0.0.0.0:80/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?format=json
 ```
 
 ```json
@@ -181,7 +181,7 @@ curl http://localhost:8000/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?fo
 
 - *Text Format*
 ```
-curl http://localhost:8000/api/v1/report/9aea25c6-3dcf-4f14-808f-5e499d1d0074?format=text
+curl http://0.0.0.0:80/api/v1/report/9aea25c6-3dcf-4f14-808f-5e499d1d0074?format=text
 ```
 
 ```text
@@ -198,7 +198,7 @@ Error Set:
 #### List all attack reports - `GET api/v1/report`
 
 ```
-curl http://localhost:8000/api/v1/report/
+curl http://0.0.0.0:80/api/v1/report/
 ```
 
 ```json
