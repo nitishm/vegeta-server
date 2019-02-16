@@ -83,7 +83,7 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 		MaxBody:   params.MaxBody,
 		Keepalive: params.Keepalive,
 		Resolvers: resolvers,
-		Laddr:  struct { *net.IPAddr }{laddr},
+		Laddr:     struct{ *net.IPAddr }{laddr},
 	}
 	opts.HTTP2 = params.HTTP2
 	opts.H2c = params.H2c
