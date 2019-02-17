@@ -1,10 +1,46 @@
 package endpoints
 
 import (
+	"net/http"
 	"vegeta-server/internal/dispatcher"
 	"vegeta-server/internal/reporter"
 
-	gin "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	ginErrNotFound = func(c *gin.Context, err error) {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{
+				"message": "Not found",
+				"code":    http.StatusNotFound,
+				"error":   err.Error(),
+			},
+		)
+	}
+
+	ginErrBadRequest = func(c *gin.Context, err error) {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"message": "Bad request params",
+				"code":    http.StatusBadRequest,
+				"error":   err.Error(),
+			},
+		)
+	}
+
+	ginErrInternalServerError = func(c *gin.Context, err error) {
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"message": "Internal server error",
+				"code":    http.StatusInternalServerError,
+				"error":   err.Error(),
+			},
+		)
+	}
 )
 
 // Endpoints provides an encapsulation for all dependencies required by the
