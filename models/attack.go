@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type AttackInfo struct {
 	// id is a attack UUID generated for each attack submitted
 	ID string `json:"id,omitempty"`
@@ -11,5 +13,7 @@ type AttackInfo struct {
 
 type AttackDetails struct {
 	AttackInfo
-	Result []byte `json:"result,omitempty"`
+	Result    []byte    `json:"result,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

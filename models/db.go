@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 type IAttackStore interface {
@@ -34,6 +35,9 @@ func NewTaskMap() TaskMap {
 func (tm TaskMap) Add(attack AttackDetails) error {
 	mu.Lock()
 	defer mu.Unlock()
+
+	attack.CreatedAt = time.Now()
+	attack.UpdatedAt = attack.CreatedAt
 
 	tm[attack.ID] = attack
 
@@ -73,6 +77,8 @@ func (tm TaskMap) Update(id string, attack AttackDetails) error {
 	}
 
 	mu.Lock()
+
+	attack.UpdatedAt = time.Now()
 	tm[id] = attack
 	mu.Unlock()
 
