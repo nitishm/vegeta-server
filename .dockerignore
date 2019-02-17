@@ -8,3 +8,5 @@ LICENSE
 README.md
 coverage.txt
 .github
+.golang-ci.yml
+.travis.yml
