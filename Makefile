@@ -5,6 +5,9 @@ DATE=$(shell date +'%FT%TZ%z')
 SERVER_DIR = cmd/server
 GO  = GO111MODULE=on go
 
+
+	
+
 all: fmt lint build test
 
 build: deps fmt
@@ -45,5 +48,18 @@ ineffassign:
 
 run: build
 	$(shell bin/vegeta-server --scheme=http --host=localhost --port=8000)
+
+
+container:
+	docker build -t vegeta-server:latest .
+
+container_run:
+	docker build -t vegeta-server:latest .
+	@docker rm -f vegeta || true
+	@docker run -d -p 8000:80 --name vegeta vegeta-server:latest
+
+container_clean:
+	@docker rm -f vegeta || true
+	@docker image rm vegeta-server:latest || true
 
 .PHONY: all build clean deps update-deps install test fmt validate lint ineffassign run
