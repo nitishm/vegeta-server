@@ -38,7 +38,8 @@ validate:
 	golangci-lint run
 
 lint:
-	golint ./...
+	golint cmd/... internal/... models/... pkg/...
+	go vet ${SERVER_DIR}/main.go
 
 ineffassign:
 	ineffassign .

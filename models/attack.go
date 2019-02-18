@@ -8,12 +8,12 @@ type AttackInfo struct {
 	// Status captures the attack status in the scheduler pipeline
 	Status AttackStatus `json:"status,omitempty"`
 	// Params captures the attack parameters
-	Params AttackParams `json:"params,omitempty"`
+	Params    AttackParams `json:"params,omitempty"`
+	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt time.Time    `json:"updated_at"`
 }
 
 type AttackDetails struct {
 	AttackInfo
-	Result    []byte    `json:"result,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Result []byte `json:"result,omitempty"`
 }

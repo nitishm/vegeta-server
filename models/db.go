@@ -36,8 +36,8 @@ func (tm TaskMap) Add(attack AttackDetails) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	attack.CreatedAt = time.Now()
-	attack.UpdatedAt = attack.CreatedAt
+	attack.AttackInfo.CreatedAt = time.Now()
+	attack.AttackInfo.UpdatedAt = attack.AttackInfo.CreatedAt
 
 	tm[attack.ID] = attack
 
@@ -77,8 +77,7 @@ func (tm TaskMap) Update(id string, attack AttackDetails) error {
 	}
 
 	mu.Lock()
-
-	attack.UpdatedAt = time.Now()
+	attack.AttackInfo.UpdatedAt = time.Now()
 	tm[id] = attack
 	mu.Unlock()
 
