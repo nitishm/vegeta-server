@@ -52,6 +52,23 @@ Flags:
 > INFO[0000] starting dispatcher                           component=dispatcher
 > ```
 
+### Using Docker
+*Build the docker image using local Dockerfile*
+```
+docker build .
+```
+*Run the docker container*
+```
+docker run -d -p 8000:80 --name vegeta {container id}
+```
+*You can also build and run a docker container using make*
+```
+make container_run
+```
+> NOTE: `make container` and `make container_clean` can be used to build the Dockerfile and delete the container and image.
+
+
+
 ### REST API Usage (`api/v1`)
 
 #### Submit an attack - `POST api/v1/attack`

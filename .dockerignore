@@ -1,0 +1,12 @@
+.git*
+bin
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+Dockerfile
+.dockerignore
+LICENSE
+README.md
+coverage.txt
+.github
+.golang-ci.yml
+.travis.yml
