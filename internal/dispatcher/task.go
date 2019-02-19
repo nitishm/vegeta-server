@@ -142,7 +142,7 @@ func (t *task) Complete(result io.Reader) error {
 
 // Cancel invokes the context cancel and marks a task as canceled
 func (t *task) Cancel() error {
-	if t.status == models.AttackResponseStatusCompleted || t.status == models.AttackResponseStatusFailed || t.status == models.AttackResponseStatusCanceled {
+	if t.status == models.AttackResponseStatusCompleted || t.status == models.AttackResponseStatusFailed || t.status == models.AttackResponseStatusCanceled { // nolint: lll
 		return fmt.Errorf("cannot cancel task %s with status %s", t.id, t.status)
 	}
 
@@ -242,7 +242,7 @@ func (t *task) log(fields map[string]interface{}) *log.Entry {
 	return l
 }
 
-func AttackInfoFromTask(t ITask) models.AttackInfo {
+func AttackInfoFromTask(t ITaskGetter) models.AttackInfo {
 	return models.AttackInfo{
 		ID:        t.ID(),
 		Status:    t.Status(),
