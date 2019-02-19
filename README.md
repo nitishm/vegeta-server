@@ -73,8 +73,8 @@ curl --header "Content-Type: application/json" --request POST --data '{"rate": 5
       "scheme": "http"
     }
   },
-  "created_at": "2008-07-06T05:04:03",
-  "updated_at": "2008-07-06T05:04:03"
+  "created_at": "Mon, 18 Feb 2019 19:48:19 EST",
+  "updated_at": "Mon, 18 Feb 2019 19:48:33 EST"
 }
 ```
 *The returned JSON body includes the **Attack ID** (`494f98a2-7165-4d1b-8834-3226b49ab582`) and the **Attack Status** (`scheduled`).*
@@ -98,8 +98,8 @@ curl http://0.0.0.0:80/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
       "scheme": "http"
     }
   },
-  "created_at": "2008-07-06T05:04:03",
-  "updated_at": "2008-07-06T05:04:03"
+  "created_at": "Mon, 18 Feb 2019 19:48:19 EST",
+  "updated_at": "Mon, 18 Feb 2019 19:48:33 EST"
 
 }
 ```
@@ -124,8 +124,8 @@ curl http://0.0.0.0:80/api/v1/attack/
                 "scheme": "http"
             }
         },
-        "created_at": "2008-07-06T05:04:03",
-        "updated_at": "2008-07-06T05:04:03"
+        "created_at": "Mon, 18 Feb 2019 19:48:19 EST",
+        "updated_at": "Mon, 18 Feb 2019 19:48:33 EST"
     },
     {
         "id": "c6fbc450-434a-4082-86c0-2a00b09297cf",
@@ -139,8 +139,8 @@ curl http://0.0.0.0:80/api/v1/attack/
                 "scheme": "http"
             }
         },
-        "created_at": "2008-07-06T05:04:03",
-        "updated_at": "2008-07-06T05:04:03"
+        "created_at": "Mon, 18 Feb 2019 19:48:19 EST",
+        "updated_at": "Mon, 18 Feb 2019 19:48:33 EST"
     }
 ]
 ```

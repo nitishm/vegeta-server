@@ -19,7 +19,7 @@ func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
 		var jsonReport models.JSONReportResponse
 		err := json.Unmarshal(report, &jsonReport)
 		if err != nil {
-			ginErrNotFound(c, err)
+			ginErrInternalServerError(c, err)
 			return
 		}
 		jsonReports = append(jsonReports, jsonReport)

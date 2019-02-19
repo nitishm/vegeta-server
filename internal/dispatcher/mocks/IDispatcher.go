@@ -11,26 +11,17 @@ type IDispatcher struct {
 }
 
 // Cancel provides a mock function with given fields: _a0, _a1
-func (_m *IDispatcher) Cancel(_a0 string, _a1 bool) (*models.AttackResponse, error) {
+func (_m *IDispatcher) Cancel(_a0 string, _a1 bool) error {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *models.AttackResponse
-	if rf, ok := ret.Get(0).(func(string, bool) *models.AttackResponse); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, bool) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.AttackResponse)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Dispatch provides a mock function with given fields: _a0

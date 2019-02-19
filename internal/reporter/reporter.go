@@ -52,6 +52,12 @@ func (r *reporter) GetAll() [][]byte {
 	attacks := r.db.GetAll()
 	reports := make([][]byte, 0)
 	for _, attack := range attacks {
+		// Canceled attacks will have a nil result field
+		if attack.Result == nil {
+			continue
+		}
+
+		// Create report for all other attacks
 		report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(attack.Result), attack.ID, vegeta.JSONFormat)
 		if err != nil {
 			continue
@@ -82,5 +88,5 @@ func (r *reporter) GetInFormat(id string, format vegeta.Format) ([]byte, error) 
 
 // Delete removes a report from the storage
 func (r *reporter) Delete(id string) error {
-	panic("implement me")
+	return r.db.Delete(id)
 }
