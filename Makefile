@@ -53,10 +53,8 @@ run: build
 container:
 	docker build -t vegeta-server:latest .
 
-container_run:
-	docker build -t vegeta-server:latest .
-	@docker rm -f vegeta || true
-	@docker run -d -p 8000:80 --name vegeta vegeta-server:latest
+container_run: container
+	@docker run -d -p 8000:80 --name vegeta vegeta-server:latest --rm
 
 container_clean:
 	@docker rm -f vegeta || true
