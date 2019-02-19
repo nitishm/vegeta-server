@@ -82,6 +82,12 @@ func main() {
 		}
 	}()
 
+	log.WithFields(log.Fields{
+		"component": "server",
+		"ip":        *ip,
+		"port":      *port,
+	}).Infof("listening")
+
 	// start server
 	log.Fatal(engine.Run(fmt.Sprintf("%s:%s", *ip, *port)))
 }

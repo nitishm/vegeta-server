@@ -1,5 +1,6 @@
 package models
 
+// JSONReportResponse provides the model for a report response object
 type JSONReportResponse struct {
 	ID        string `json:"id"`
 	Latencies struct {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -12,20 +13,30 @@ import (
 
 	"io"
 	"io/ioutil"
-	"sync"
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
 )
 
 // ITask defines an interface for attack tasks
 type ITask interface {
+	ITaskGetter
+	ITaskActions
+}
+
+type ITaskGetter interface {
 	// ID returns the attack task ID
 	ID() string
 	// Status returns the attack task status
 	Status() models.AttackStatus
 	// Params returns the attack task params
 	Params() models.AttackParams
+	// CreatedAt returns the created at timestamp
+	CreatedAt() time.Time
+	// UpdatedAt returns the updated at timestamp
+	UpdatedAt() time.Time
+}
 
+type ITaskActions interface {
 	// Run the attack using the configured attack function.
 	Run(vegeta.AttackFunc) error
 	// Complete changes task status to completed
@@ -51,12 +62,14 @@ func newAttackContext() attackContext {
 }
 
 type task struct {
-	mu  *sync.RWMutex
 	ctx attackContext
 
 	id     string
 	params models.AttackParams
 	status models.AttackStatus
+
+	createdAt time.Time
+	updatedAt time.Time
 
 	updateCh chan models.AttackDetails
 }
@@ -65,11 +78,12 @@ type task struct {
 func NewTask(updateCh chan models.AttackDetails, params models.AttackParams) *task { //nolint: golint
 	id := uuid.NewV4().String()
 	t := &task{
-		&sync.RWMutex{},
 		newAttackContext(),
 		id,
 		params,
 		models.AttackResponseStatusScheduled,
+		time.Now(),
+		time.Now(),
 		updateCh,
 	}
 	t.log(nil).Debug("creating new task")
@@ -78,11 +92,15 @@ func NewTask(updateCh chan models.AttackDetails, params models.AttackParams) *ta
 
 func (t *task) update(status models.AttackStatus, result io.Reader) {
 	t.status = status
+	t.updatedAt = time.Now()
+
 	details := models.AttackDetails{
 		AttackInfo: models.AttackInfo{
-			ID:     t.id,
-			Status: t.status,
-			Params: t.params,
+			ID:        t.id,
+			Status:    t.status,
+			Params:    t.params,
+			CreatedAt: t.createdAt.Format(time.RFC1123),
+			UpdatedAt: t.updatedAt.Format(time.RFC1123),
 		},
 	}
 
@@ -100,9 +118,6 @@ func (t *task) Run(fn vegeta.AttackFunc) error {
 		return fmt.Errorf("cannot run task %s with status %s", t.id, t.status)
 	}
 
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
 	t.update(models.AttackResponseStatusRunning, nil)
 
 	t.log(nil).Debug("running")
@@ -118,9 +133,6 @@ func (t *task) Complete(result io.Reader) error {
 		return fmt.Errorf("cannot mark completed for task %s with status %s", t.id, t.status)
 	}
 
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
 	t.update(models.AttackResponseStatusCompleted, result)
 
 	t.log(nil).Debug("completed")
@@ -130,12 +142,10 @@ func (t *task) Complete(result io.Reader) error {
 
 // Cancel invokes the context cancel and marks a task as canceled
 func (t *task) Cancel() error {
-	if t.status == models.AttackResponseStatusCompleted || t.status == models.AttackResponseStatusFailed {
+	if t.status == models.AttackResponseStatusCompleted || t.status == models.AttackResponseStatusFailed || t.status == models.AttackResponseStatusCanceled {
 		return fmt.Errorf("cannot cancel task %s with status %s", t.id, t.status)
 	}
 
-	t.mu.Lock()
-	defer t.mu.Unlock()
 	t.ctx.cancelFn()
 
 	t.update(models.AttackResponseStatusCanceled, nil)
@@ -147,9 +157,6 @@ func (t *task) Cancel() error {
 
 // Fail marks a task as failed
 func (t *task) Fail() error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
 	t.update(models.AttackResponseStatusFailed, nil)
 
 	t.log(nil).Error("failed")
@@ -158,23 +165,27 @@ func (t *task) Fail() error {
 
 // ID returns the task identifier
 func (t *task) ID() string {
-	t.mu.RLock()
-	defer t.mu.RUnlock()
 	return t.id
 }
 
 // Status returns the latest task status
 func (t *task) Status() models.AttackStatus {
-	t.mu.RLock()
-	defer t.mu.RUnlock()
 	return t.status
 }
 
-// Params returns a the confgured attack params
+// Params returns a the configured attack params
 func (t *task) Params() models.AttackParams {
-	t.mu.RLock()
-	defer t.mu.RUnlock()
 	return t.params
+}
+
+// CreatedAt returns the created at timestamp
+func (t *task) CreatedAt() time.Time {
+	return t.createdAt
+}
+
+// UpdatedAt returns the created at timestamp
+func (t *task) UpdatedAt() time.Time {
+	return t.updatedAt
 }
 
 // TODO: Remove dependency on vegeta lib. Move functionality to pkg/vegeta package.
@@ -202,7 +213,7 @@ loop:
 				_ = t.Fail()
 			}
 		case <-t.ctx.Done():
-			t.log(nil).Warn("task was canceled", t.id)
+			t.log(nil).Warnf("task %s was canceled", t.id)
 			return nil
 		}
 	}
@@ -229,4 +240,14 @@ func (t *task) log(fields map[string]interface{}) *log.Entry {
 		l = l.WithFields(fields)
 	}
 	return l
+}
+
+func AttackInfoFromTask(t ITask) models.AttackInfo {
+	return models.AttackInfo{
+		ID:        t.ID(),
+		Status:    t.Status(),
+		Params:    t.Params(),
+		CreatedAt: t.CreatedAt().Format(time.RFC1123),
+		UpdatedAt: t.UpdatedAt().Format(time.RFC1123),
+	}
 }

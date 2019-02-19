@@ -1,7 +1,7 @@
 package models
 
-import "time"
-
+// AttackInfo encapsulates the attack information for attacks
+// submitted to the dispatcher
 type AttackInfo struct {
 	// id is a attack UUID generated for each attack submitted
 	ID string `json:"id,omitempty"`
@@ -9,10 +9,12 @@ type AttackInfo struct {
 	Status AttackStatus `json:"status,omitempty"`
 	// Params captures the attack parameters
 	Params    AttackParams `json:"params,omitempty"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
+	CreatedAt string       `json:"created_at"`
+	UpdatedAt string       `json:"updated_at"`
 }
 
+// AttackDetails captures the AttackInfo for COMPLETED attacks,
+// along with the result as a byte array
 type AttackDetails struct {
 	AttackInfo
 	Result []byte `json:"result,omitempty"`

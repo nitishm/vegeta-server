@@ -17,7 +17,7 @@ type IDispatcher interface {
 	// Dispatch an attack. Used by the client/handler
 	Dispatch(models.AttackParams) *models.AttackResponse
 	// Cancel a scheduled/on-going attack
-	Cancel(string, bool) (*models.AttackResponse, error)
+	Cancel(string, bool) error
 
 	// Get the attack status, params and ID for a single attack
 	Get(string) (*models.AttackResponse, error)
@@ -50,8 +50,7 @@ func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { /
 
 // Dispatch implements the attack dispatcher method, used by the client to schedule new attacks
 func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+
 	task := NewTask(d.attackUpdateCh, params)
 	id := task.ID()
 	status := task.Status()
@@ -61,26 +60,22 @@ func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse
 	}
 
 	// Track the task
+	d.mu.Lock()
 	d.tasks[task.ID()] = task
+	d.mu.Unlock()
 
 	// Add to database
 	_ = d.db.Add(models.AttackDetails{
-		AttackInfo: models.AttackInfo{
-			ID:     id,
-			Status: status,
-			Params: params,
-		},
-		Result: nil,
+		AttackInfo: AttackInfoFromTask(task),
+		Result:     nil,
 	})
 
 	d.log(fields).Info("dispatching new attack")
 	d.newTaskCh <- task
 
-	return &models.AttackResponse{
-		ID:     task.ID(),
-		Status: task.Status(),
-		Params: task.Params(),
-	}
+	attackDetails, _ := d.db.GetByID(id)
+	resp := models.AttackResponse(attackDetails.AttackInfo)
+	return &resp
 }
 
 // Get an attack by ID
@@ -91,41 +86,26 @@ func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
 
 	d.log(fields).Debug("getting attack status")
 
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	t, ok := d.tasks[id]
-	if !ok {
-		err := fmt.Errorf("cannot find task with id %s", id)
-		d.log(fields).Error("failed to find attack")
-		return nil, err
-	}
-	response := &models.AttackResponse{
-		ID:     t.ID(),
-		Status: t.Status(),
-		Params: t.Params(),
-	}
-	return response, nil
+	attackDetails, _ := d.db.GetByID(id)
+	resp := models.AttackResponse(attackDetails.AttackInfo)
+	return &resp, nil
 }
 
 // List all submitted attacks
 func (d *dispatcher) List() []*models.AttackResponse {
 	d.log(nil).Debug("getting attack list")
 
-	d.mu.RLock()
-	defer d.mu.RUnlock()
 	responses := make([]*models.AttackResponse, 0)
-	for _, task := range d.tasks {
-		responses = append(responses, &models.AttackResponse{
-			ID:     task.ID(),
-			Status: task.Status(),
-			Params: task.Params(),
-		})
+
+	for _, attackDetails := range d.db.GetAll() {
+		resp := models.AttackResponse(attackDetails.AttackInfo)
+		responses = append(responses, &resp)
 	}
 	return responses
 }
 
 // Cancel an attack by ID.
-func (d *dispatcher) Cancel(id string, cancel bool) (*models.AttackResponse, error) {
+func (d *dispatcher) Cancel(id string, cancel bool) error {
 	fields := log.Fields{
 		"ID":       id,
 		"ToCancel": cancel,
@@ -134,26 +114,22 @@ func (d *dispatcher) Cancel(id string, cancel bool) (*models.AttackResponse, err
 	d.log(fields).Info("canceling attack")
 
 	d.mu.Lock()
-	defer d.mu.Unlock()
 	t, ok := d.tasks[id]
 	if !ok {
 		d.log(fields).Error("task not found")
-		return nil, fmt.Errorf("cannot find task with id %s", id)
+		return fmt.Errorf("cannot find task with id %s", id)
 	}
+	d.mu.Unlock()
 
 	if cancel {
 		err := t.Cancel()
 		if err != nil {
 			d.log(fields).WithError(err).Error("failed to cancel task")
-			return nil, err
+			return err
 		}
 	}
 
-	return &models.AttackResponse{
-		ID:     t.ID(),
-		Status: t.Status(),
-		Params: t.Params(),
-	}, nil
+	return nil
 }
 
 func (d *dispatcher) log(fields map[string]interface{}) *log.Entry {

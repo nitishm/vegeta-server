@@ -8,7 +8,7 @@ type AttackHeader struct {
 
 // AttackParams request parameters
 type AttackParams struct {
-	Rate int `json:"rate,omitempty"`
+	Rate int `json:"rate,omitempty" binding:"required"`
 
 	Connections int64 `json:"connections,omitempty"`
 	Workers     int64 `json:"workers,omitempty"`
@@ -17,7 +17,7 @@ type AttackParams struct {
 
 	Key       string `json:"key,omitempty"`
 	Laddr     string `json:"laddr,omitempty"`
-	Duration  string `json:"duration,omitempty"`
+	Duration  string `json:"duration,omitempty" binding:"required"`
 	Body      string `json:"body,omitempty"`
 	Cert      string `json:"cert,omitempty"`
 	Resolvers string `json:"resolvers,omitempty"`
@@ -29,7 +29,7 @@ type AttackParams struct {
 	Insecure  bool `json:"insecure,omitempty"`
 	Keepalive bool `json:"keepalive,omitempty"`
 
-	Target  Target         `json:"target,omitempty"`
+	Target  Target         `json:"target,omitempty" binding:"required"`
 	Headers []AttackHeader `json:"headers,omitempty"`
 }
 
@@ -63,5 +63,5 @@ const (
 
 // AttackCancel request body
 type AttackCancel struct {
-	Cancel bool `json:"cancel"`
+	Cancel bool `json:"cancel" binding:"required"`
 }

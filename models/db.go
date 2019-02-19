@@ -3,9 +3,9 @@ package models
 import (
 	"fmt"
 	"sync"
-	"time"
 )
 
+// IAttackStore captures all methods related to storing and retrieving attack details
 type IAttackStore interface {
 	// Add item by its ID string
 	Add(AttackDetails) error
@@ -26,24 +26,25 @@ type IAttackStore interface {
 
 var mu sync.RWMutex
 
+// TaskMap is a map of attack ID's to their AttackDetails
 type TaskMap map[string]AttackDetails
 
+// NewTaskMap constructs a new instance of TaskMap
 func NewTaskMap() TaskMap {
 	return make(TaskMap)
 }
 
+// Add attack details by ID to store
 func (tm TaskMap) Add(attack AttackDetails) error {
 	mu.Lock()
 	defer mu.Unlock()
-
-	attack.AttackInfo.CreatedAt = time.Now()
-	attack.AttackInfo.UpdatedAt = attack.AttackInfo.CreatedAt
 
 	tm[attack.ID] = attack
 
 	return nil
 }
 
+// GetAll attacks and details from store
 func (tm TaskMap) GetAll() []AttackDetails {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -56,6 +57,7 @@ func (tm TaskMap) GetAll() []AttackDetails {
 	return attacks
 }
 
+// GetByID returns an attack detail by ID
 func (tm TaskMap) GetByID(id string) (AttackDetails, error) {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -68,6 +70,7 @@ func (tm TaskMap) GetByID(id string) (AttackDetails, error) {
 	return attack, nil
 }
 
+// Update an attack detail in the store
 func (tm TaskMap) Update(id string, attack AttackDetails) error {
 	mu.RLock()
 	_, ok := tm[id]
@@ -77,13 +80,13 @@ func (tm TaskMap) Update(id string, attack AttackDetails) error {
 	}
 
 	mu.Lock()
-	attack.AttackInfo.UpdatedAt = time.Now()
 	tm[id] = attack
 	mu.Unlock()
 
 	return nil
 }
 
+// Delete an attack by ID from the store
 func (tm TaskMap) Delete(id string) error {
 	mu.RLock()
 	_, ok := tm[id]

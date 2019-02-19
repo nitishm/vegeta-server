@@ -55,11 +55,11 @@ func (e *Endpoints) PostAttackByIDCancelEndpoint(c *gin.Context) {
 		return
 	}
 
-	resp, err := e.dispatcher.Cancel(id, attackCancelParams.Cancel)
+	err = e.dispatcher.Cancel(id, attackCancelParams.Cancel)
 	if err != nil {
 		ginErrInternalServerError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	c.Status(http.StatusOK)
 }
