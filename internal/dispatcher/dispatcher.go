@@ -100,7 +100,7 @@ func (d *dispatcher) Run(quit chan struct{}) {
 				"Status": update.Status,
 			}
 
-			task, _ := d.tasks[update.ID]
+			task := d.tasks[update.ID]
 
 			if err := d.db.Update(task.ID(), attackDetailFromTask(task)); err != nil {
 				d.log(fields).WithError(err).Error("attack update error")
