@@ -26,12 +26,12 @@ type IDispatcher interface {
 }
 
 type dispatcher struct {
-	mu             *sync.RWMutex
-	tasks          map[string]ITask
-	attackFn       vegeta.AttackFunc
-	newTaskCh      chan ITask
-	attackUpdateCh chan models.AttackDetails
-	db             models.IAttackStore
+	mu       *sync.RWMutex
+	tasks    map[string]ITask
+	attackFn vegeta.AttackFunc
+	submitCh chan ITask
+	updateCh chan UpdateMessage
+	db       models.IAttackStore
 }
 
 // NewDispatcher constructs a new instance of the dispatcher object.
@@ -41,7 +41,7 @@ func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { /
 		make(map[string]ITask),
 		fn,
 		make(chan ITask, 10),
-		make(chan models.AttackDetails, 20),
+		make(chan UpdateMessage, 20),
 		db,
 	}
 	d.log(nil).Info("creating new dispatcher")
@@ -50,8 +50,7 @@ func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { /
 
 // Dispatch implements the attack dispatcher method, used by the client to schedule new attacks
 func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse {
-
-	task := NewTask(d.attackUpdateCh, params)
+	task := NewTask(d.updateCh, params)
 	id := task.ID()
 	status := task.Status()
 	fields := log.Fields{
@@ -65,43 +64,54 @@ func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse
 	d.mu.Unlock()
 
 	// Add to database
-	_ = d.db.Add(models.AttackDetails{
-		AttackInfo: AttackInfoFromTask(task),
-		Result:     nil,
-	})
+	_ = d.db.Add(attackDetailFromTask(task))
 
 	d.log(fields).Info("dispatching new attack")
-	d.newTaskCh <- task
+	d.submitCh <- task
 
 	attackDetails, _ := d.db.GetByID(id)
 	resp := models.AttackResponse(attackDetails.AttackInfo)
 	return &resp
 }
 
-// Get an attack by ID
-func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
-	fields := log.Fields{
-		"ID": id,
+// Run the dispatcher event loop to dispatch new attacks,
+// receive status updates for scheduled attacks and update the
+// storage.
+func (d *dispatcher) Run(quit chan struct{}) {
+	defer close(d.submitCh)
+	d.log(nil).Info("starting dispatcher")
+	for {
+		select {
+		case task := <-d.submitCh:
+			fields := log.Fields{
+				"ID":     task.ID(),
+				"Status": task.Status(),
+			}
+
+			d.log(fields).Debug("received task")
+
+			if err := task.Run(d.attackFn); err != nil {
+				d.log(fields).WithError(err).Errorf("failed to run %s", task.ID())
+				continue
+			}
+		case update := <-d.updateCh:
+			fields := log.Fields{
+				"ID":     update.ID,
+				"Status": update.Status,
+			}
+
+			task, _ := d.tasks[update.ID]
+
+			if err := d.db.Update(task.ID(), attackDetailFromTask(task)); err != nil {
+				d.log(fields).WithError(err).Error("attack update error")
+				continue
+			}
+			d.log(fields).Debug("received update for attack")
+		case <-quit:
+			d.log(nil).Warning("gracefully shutting down the dispatcher")
+			return
+		}
 	}
-
-	d.log(fields).Debug("getting attack status")
-
-	attackDetails, _ := d.db.GetByID(id)
-	resp := models.AttackResponse(attackDetails.AttackInfo)
-	return &resp, nil
-}
-
-// List all submitted attacks
-func (d *dispatcher) List() []*models.AttackResponse {
-	d.log(nil).Debug("getting attack list")
-
-	responses := make([]*models.AttackResponse, 0)
-
-	for _, attackDetails := range d.db.GetAll() {
-		resp := models.AttackResponse(attackDetails.AttackInfo)
-		responses = append(responses, &resp)
-	}
-	return responses
 }
 
 // Cancel an attack by ID.
@@ -132,6 +142,32 @@ func (d *dispatcher) Cancel(id string, cancel bool) error {
 	return nil
 }
 
+// Get an attack by ID
+func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
+	fields := log.Fields{
+		"ID": id,
+	}
+
+	d.log(fields).Debug("getting attack status")
+
+	attackDetails, _ := d.db.GetByID(id)
+	resp := models.AttackResponse(attackDetails.AttackInfo)
+	return &resp, nil
+}
+
+// List all submitted attacks
+func (d *dispatcher) List() []*models.AttackResponse {
+	d.log(nil).Debug("getting attack list")
+
+	responses := make([]*models.AttackResponse, 0)
+
+	for _, attackDetails := range d.db.GetAll() {
+		resp := models.AttackResponse(attackDetails.AttackInfo)
+		responses = append(responses, &resp)
+	}
+	return responses
+}
+
 func (d *dispatcher) log(fields map[string]interface{}) *log.Entry {
 	l := log.WithField("component", "dispatcher")
 
@@ -140,42 +176,4 @@ func (d *dispatcher) log(fields map[string]interface{}) *log.Entry {
 	}
 
 	return l
-}
-
-// Run the dispatcher event loop to dispatch new attacks,
-// receive status updates for scheduled attacks and update the
-// storage.
-func (d *dispatcher) Run(quit chan struct{}) {
-	defer close(d.newTaskCh)
-	d.log(nil).Info("starting dispatcher")
-	for {
-		select {
-		case task := <-d.newTaskCh:
-			fields := log.Fields{
-				"ID":     task.ID(),
-				"Status": task.Status(),
-			}
-
-			d.log(fields).Debug("received task")
-
-			if err := task.Run(d.attackFn); err != nil {
-				d.log(fields).WithError(err).Errorf("failed to run %s", task.ID())
-				continue
-			}
-		case updatedAttack := <-d.attackUpdateCh:
-			fields := log.Fields{
-				"ID":     updatedAttack.ID,
-				"Status": updatedAttack.Status,
-			}
-
-			if err := d.db.Update(updatedAttack.ID, updatedAttack); err != nil {
-				d.log(fields).WithError(err).Error("attack update error")
-				continue
-			}
-			d.log(fields).Debug("received update for attack")
-		case <-quit:
-			d.log(nil).Warning("gracefully shutting down the dispatcher")
-			return
-		}
-	}
 }
