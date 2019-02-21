@@ -19,7 +19,7 @@ const (
 	// TextFormat typedef for query param "text"
 	TextFormat Format = "text"
 	// HistogramFormat typedef for query param "histogram"
-	HistogramFormat Format = "histogram"
+	//HistogramFormat Format = "histogram"
 	// BinaryFormat typedef for query param "binary"
 	BinaryFormat Format = "binary"
 )
@@ -86,5 +86,15 @@ decode:
 		return json.Marshal(jsonReportResponse)
 	}
 
+	if format == TextFormat {
+		buf = addId(buf, id)
+	}
+
 	return buf.Bytes(), nil
+}
+
+func addId(report *bytes.Buffer, id string) *bytes.Buffer {
+	ret := bytes.NewBufferString(fmt.Sprintf("ID %s\n", id))
+	_, _ = ret.ReadFrom(report)
+	return ret
 }
