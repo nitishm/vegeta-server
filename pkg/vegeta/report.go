@@ -93,7 +93,7 @@ decode:
 	return buf.Bytes(), nil
 }
 
-func addId(report *bytes.Buffer, id string) *bytes.Buffer {
+func addId(report io.Reader, id string) *bytes.Buffer {
 	ret := bytes.NewBufferString(fmt.Sprintf("ID %s\n", id))
 	_, _ = ret.ReadFrom(report)
 	return ret
