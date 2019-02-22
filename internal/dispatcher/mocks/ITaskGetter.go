@@ -2,6 +2,7 @@
 
 package mocks
 
+import io "io"
 import mock "github.com/stretchr/testify/mock"
 import models "vegeta-server/models"
 import time "time"
@@ -48,6 +49,22 @@ func (_m *ITaskGetter) Params() models.AttackParams {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(models.AttackParams)
+	}
+
+	return r0
+}
+
+// Result provides a mock function with given fields:
+func (_m *ITaskGetter) Result() io.Reader {
+	ret := _m.Called()
+
+	var r0 io.Reader
+	if rf, ok := ret.Get(0).(func() io.Reader); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(io.Reader)
+		}
 	}
 
 	return r0

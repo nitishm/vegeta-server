@@ -60,7 +60,7 @@ func main() {
 
 	d := dispatcher.NewDispatcher(
 		db,
-		vegeta.AttackFn,
+		vegeta.Attack,
 	)
 
 	r := reporter.NewReporter(db)

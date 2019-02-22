@@ -1,15 +1,15 @@
 package vegeta
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"vegeta-server/models"
+
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
-// AttackFunc provides type used by the attacker class
-type AttackFunc func(*AttackOpts) <-chan *vegeta.Result
-
-// AttackFn provides a func with the AttackFunc signature
-// for the vegeta attacker
-func AttackFn(opts *AttackOpts) <-chan *vegeta.Result {
+func attackWithOpts(opts *AttackOpts) <-chan *vegeta.Result {
 	atk := vegeta.NewAttacker(
 		vegeta.Redirects(opts.Redirects),
 		vegeta.Timeout(opts.Timeout),
@@ -20,6 +20,40 @@ func AttackFn(opts *AttackOpts) <-chan *vegeta.Result {
 		vegeta.H2C(opts.H2c),
 		vegeta.MaxBody(opts.MaxBody),
 	)
+
 	tr := vegeta.NewStaticTargeter(opts.Target)
+
 	return atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
+}
+
+// Attack implements the AttackFunc type for a vegeta based attacker
+func Attack(name string, params models.AttackParams, quit chan struct{}) (io.Reader, error) {
+	opts, err := NewAttackOptsFromAttackParams(name, params)
+	if err != nil {
+		return nil, err
+	}
+
+	result := attackWithOpts(opts)
+	if result == nil {
+		return nil, fmt.Errorf("empty channel returned")
+	}
+
+	buf := bytes.NewBuffer(nil)
+	enc := vegeta.NewEncoder(buf)
+loop:
+	for {
+		select {
+		case r, ok := <-result:
+			if !ok {
+				break loop
+			}
+			if err := enc.Encode(r); err != nil {
+				return nil, err
+			}
+		case <-quit:
+			return nil, nil
+		}
+	}
+
+	return buf, nil
 }

@@ -7,7 +7,6 @@ import (
 
 	"sync"
 	"vegeta-server/models"
-	"vegeta-server/pkg/vegeta"
 )
 
 // IDispatcher provides an interface for attack dispatch operations.
@@ -28,14 +27,14 @@ type IDispatcher interface {
 type dispatcher struct {
 	mu       *sync.RWMutex
 	tasks    map[string]ITask
-	attackFn vegeta.AttackFunc
+	attackFn AttackFunc
 	submitCh chan ITask
 	updateCh chan UpdateMessage
 	db       models.IAttackStore
 }
 
 // NewDispatcher constructs a new instance of the dispatcher object.
-func NewDispatcher(db models.IAttackStore, fn vegeta.AttackFunc) *dispatcher { // nolint: golint
+func NewDispatcher(db models.IAttackStore, fn AttackFunc) *dispatcher { // nolint: golint
 	d := &dispatcher{
 		&sync.RWMutex{},
 		make(map[string]ITask),
