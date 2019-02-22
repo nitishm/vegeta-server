@@ -84,24 +84,13 @@ decode:
 		}
 		jsonReportResponse.ID = id
 		return json.Marshal(jsonReportResponse)
-	}
-
-	else if format == TextFormat {
-		buf, err = addID(buf, id)
-		if err != nil {
-			return nil, err
-		}
-
+	} else if format == TextFormat {
+		return addID(buf, id), nil
 	}
 
 	return buf.Bytes(), nil
 }
 
-func addID(report io.Reader, id string) (*bytes.Buffer, error) {
-	ret := bytes.NewBufferString(fmt.Sprintf("ID %s\n", id))
-	_, err := ret.ReadFrom(report)
-	if err != nil {
-		return nil, err
-	}
-	return ret, nil
+func addID(report *bytes.Buffer, id string) []byte {
+	return append([]byte(fmt.Sprintf("ID %s\n", id)), report.Bytes()...)
 }

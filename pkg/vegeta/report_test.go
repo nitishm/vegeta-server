@@ -14,15 +14,15 @@ func Test_addID(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *bytes.Buffer
+		want []byte
 	}{
-		{"add id short", args{bytes.NewBufferString("test string"), "123"}, bytes.NewBufferString("ID 123\ntest string")},
+		{"add id short", args{bytes.NewBufferString("test string"), "123"}, []byte("ID 123\ntest string")},
 		{"add id long", args{bytes.NewBufferString("test string"), "283orcniouq3hnq8hcqn3f8ohuicfbhn"},
-			bytes.NewBufferString("ID 283orcniouq3hnq8hcqn3f8ohuicfbhn\ntest string")},
+			[]byte("ID 283orcniouq3hnq8hcqn3f8ohuicfbhn\ntest string")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := addID(tt.args.report, tt.args.id); !reflect.DeepEqual(got, tt.want) {
+			if got := addID(tt.args.report, tt.args.id); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("addID() = %v, want %v", got, tt.want)
 			}
 		})
