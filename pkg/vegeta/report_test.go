@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Test_addId(t *testing.T) {
+func Test_addID(t *testing.T) {
 	type args struct {
 		report *bytes.Buffer
 		id     string
@@ -22,8 +22,8 @@ func Test_addId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := addId(tt.args.report, tt.args.id); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("addId() = %v, want %v", got, tt.want)
+			if got := addID(tt.args.report, tt.args.id); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("addID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
