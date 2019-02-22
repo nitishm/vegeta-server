@@ -2,20 +2,20 @@ package dispatcher
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
 
 	log "github.com/sirupsen/logrus"
-	vlib "github.com/tsenart/vegeta/lib"
 
 	"io"
 	"io/ioutil"
 	"vegeta-server/models"
-	"vegeta-server/pkg/vegeta"
 )
+
+// AttackFunc provides type used by the attacker class
+type AttackFunc func(string, models.AttackParams, chan struct{}) (io.Reader, error)
 
 // ITask defines an interface for attack tasks
 type ITask interface {
@@ -23,6 +23,7 @@ type ITask interface {
 	ITaskActions
 }
 
+// ITaskGetter defines an interface for the task getter methods
 type ITaskGetter interface {
 	// ID returns the attack task ID
 	ID() string
@@ -38,9 +39,10 @@ type ITaskGetter interface {
 	Result() io.Reader
 }
 
+// ITaskActions defines an interface for the task action methods
 type ITaskActions interface {
 	// Run the attack using the configured attack function.
-	Run(vegeta.AttackFunc) error
+	Run(AttackFunc) error
 	// Complete changes task status to completed
 	Complete(io.Reader) error
 	// Cancel changes task status to canceled
@@ -51,28 +53,14 @@ type ITaskActions interface {
 	SendUpdate()
 }
 
+// UpdateMessage is a message type used to send updates to the dispatcher
+// regarding any status changes.
 type UpdateMessage struct {
 	ID     string
 	Status models.AttackStatus
 }
 
-type attackContext struct {
-	context.Context
-	cancelFn context.CancelFunc
-}
-
-func newAttackContext() attackContext {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	return attackContext{
-		ctx,
-		cancel,
-	}
-}
-
 type task struct {
-	ctx attackContext
-
 	id     string
 	params models.AttackParams
 	status models.AttackStatus
@@ -82,14 +70,13 @@ type task struct {
 	updatedAt time.Time
 
 	updateCh chan UpdateMessage
+	quit     chan struct{}
 }
 
 // NewTask returns a new instance of a task object
 func NewTask(updateCh chan UpdateMessage, params models.AttackParams) *task { //nolint: golint
 	id := uuid.NewV4().String()
 	t := &task{
-		newAttackContext(),
-
 		id,
 		params,
 		models.AttackResponseStatusScheduled,
@@ -99,6 +86,7 @@ func NewTask(updateCh chan UpdateMessage, params models.AttackParams) *task { //
 		time.Now(),
 
 		updateCh,
+		make(chan struct{}),
 	}
 
 	t.log(nil).Debug("creating new task")
@@ -107,7 +95,7 @@ func NewTask(updateCh chan UpdateMessage, params models.AttackParams) *task { //
 }
 
 // Run an attack task using the passed in attack function
-func (t *task) Run(fn vegeta.AttackFunc) error {
+func (t *task) Run(fn AttackFunc) error {
 	if t.status != models.AttackResponseStatusScheduled {
 		return fmt.Errorf("cannot run task %s with status %s", t.id, t.status)
 	}
@@ -150,7 +138,7 @@ func (t *task) Cancel() error {
 		return fmt.Errorf("cannot cancel task %s with status %s", t.id, t.status)
 	}
 
-	t.ctx.cancelFn()
+	t.quit <- struct{}{}
 
 	t.status = models.AttackResponseStatusCanceled
 
@@ -210,34 +198,15 @@ func (t *task) Result() io.Reader {
 	return t.result
 }
 
-// TODO: Remove dependency on vegeta lib. Move functionality to pkg/vegeta package.
-func run(t *task, fn vegeta.AttackFunc) error {
-	opts, err := vegeta.NewAttackOptsFromAttackParams(t.id, t.params)
+func run(t *task, fn AttackFunc) {
+	buf, err := fn(t.id, t.params, t.quit)
 	if err != nil {
-		return err
+		_ = t.Fail()
 	}
 
-	result := fn(opts)
-	if result == nil {
-		return fmt.Errorf("empty channel returned")
-	}
-
-	buf := bytes.NewBuffer(nil)
-	enc := vlib.NewEncoder(buf)
-loop:
-	for {
-		select {
-		case r, ok := <-result:
-			if !ok {
-				break loop
-			}
-			if err = enc.Encode(r); err != nil {
-				_ = t.Fail()
-			}
-		case <-t.ctx.Done():
-			t.log(nil).Warnf("task %s was canceled", t.id)
-			return nil
-		}
+	// Attack was canceled
+	if buf == nil {
+		return
 	}
 
 	// Mark attack as completed
@@ -246,8 +215,6 @@ loop:
 		log.WithError(err).Error("Failed to Complete")
 		_ = t.Fail()
 	}
-
-	return nil
 }
 
 func (t *task) log(fields map[string]interface{}) *log.Entry {
