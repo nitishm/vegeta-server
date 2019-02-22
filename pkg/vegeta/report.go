@@ -87,14 +87,21 @@ decode:
 	}
 
 	if format == TextFormat {
-		buf = addID(buf, id)
+		buf, err = addID(buf, id)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	return buf.Bytes(), nil
 }
 
-func addID(report io.Reader, id string) *bytes.Buffer {
+func addID(report io.Reader, id string) (*bytes.Buffer, error) {
 	ret := bytes.NewBufferString(fmt.Sprintf("ID %s\n", id))
-	_, _ = ret.ReadFrom(report)
-	return ret
+	_, err := ret.ReadFrom(report)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
