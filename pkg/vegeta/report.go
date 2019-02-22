@@ -86,7 +86,7 @@ decode:
 		return json.Marshal(jsonReportResponse)
 	}
 
-	if format == TextFormat {
+	else if format == TextFormat {
 		buf, err = addID(buf, id)
 		if err != nil {
 			return nil, err
