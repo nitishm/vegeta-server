@@ -109,7 +109,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 				setup: func() (reporter.IReporter, *http.Request) {
 					r := &rmock.IReporter{}
 					r.
-						On("GetInFormat", "123", vegeta.JSONFormat).
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.JSONFormat), vegeta.DefaultBucketString)).
 						Return([]byte{}, fmt.Errorf("not found"))
 
 					// Setup router
@@ -128,7 +128,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 					bResp, _ := json.Marshal(resp)
 					r := &rmock.IReporter{}
 					r.
-						On("GetInFormat", "123", vegeta.JSONFormat).
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.JSONFormat), vegeta.DefaultBucketString)).
 						Return(bResp, nil)
 
 					// Setup router
@@ -147,7 +147,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 					bResp, _ := json.Marshal(resp)
 					r := &rmock.IReporter{}
 					r.
-						On("GetInFormat", "123", vegeta.JSONFormat).
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.JSONFormat), vegeta.DefaultBucketString)).
 						Return(bResp, nil)
 
 					// Setup router
@@ -164,7 +164,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 				setup: func() (reporter.IReporter, *http.Request) {
 					r := &rmock.IReporter{}
 					r.
-						On("GetInFormat", "123", vegeta.JSONFormat).
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.JSONFormat), vegeta.DefaultBucketString)).
 						Return(nil, nil)
 
 					// Setup router
@@ -181,7 +181,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 				setup: func() (reporter.IReporter, *http.Request) {
 					r := &rmock.IReporter{}
 					r.
-						On("GetInFormat", "123", vegeta.TextFormat).
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.TextFormat), vegeta.DefaultBucketString)).
 						Return([]byte{}, nil)
 
 					// Setup router
@@ -198,7 +198,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 				setup: func() (reporter.IReporter, *http.Request) {
 					r := &rmock.IReporter{}
 					r.
-						On("GetInFormat", "123", vegeta.BinaryFormat).
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.BinaryFormat), vegeta.DefaultBucketString)).
 						Return([]byte{}, nil)
 
 					// Setup router
