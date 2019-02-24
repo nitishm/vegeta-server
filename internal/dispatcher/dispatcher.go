@@ -128,7 +128,7 @@ func (d *dispatcher) Run(quit chan struct{}) {
 		case <-quit:
 			d.mu.RLock()
 			for _, task := range d.tasks {
-				task.Cancel()
+				_ = task.Cancel()
 			}
 			d.mu.RUnlock()
 			d.log(nil).Warning("gracefully shutting down the dispatcher")
