@@ -18,7 +18,8 @@ script:
   - make lint
   - make validate
   - make ineffassign
-  - make test
+  - go test -v -race -p 1 -covermode=atomic ./...
+  - go test -covermode=count -p 1 -coverprofile=profile.cov ./...
 
 after_script:
   - goveralls -coverprofile=profile.cov -service=travis-ci
