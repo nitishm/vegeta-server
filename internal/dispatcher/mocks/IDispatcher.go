@@ -25,7 +25,7 @@ func (_m *IDispatcher) Cancel(_a0 string, _a1 bool) error {
 }
 
 // Dispatch provides a mock function with given fields: _a0
-func (_m *IDispatcher) Dispatch(_a0 models.AttackParams) *models.AttackResponse {
+func (_m *IDispatcher) Dispatch(_a0 models.AttackParams) (*models.AttackResponse, error) {
 	ret := _m.Called(_a0)
 
 	var r0 *models.AttackResponse
@@ -37,7 +37,14 @@ func (_m *IDispatcher) Dispatch(_a0 models.AttackParams) *models.AttackResponse 
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.AttackParams) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Get provides a mock function with given fields: _a0

@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"fmt"
+	"vegeta-server/pkg/vegeta"
 
 	log "github.com/sirupsen/logrus"
 
@@ -9,12 +10,17 @@ import (
 	"vegeta-server/models"
 )
 
+var (
+	defaultDB       = models.NewTaskMap()
+	defaultAttackFn = vegeta.Attack
+)
+
 // IDispatcher provides an interface for attack dispatch operations.
 type IDispatcher interface {
 	// Run the dispatcher event loop
 	Run(chan struct{})
 	// Dispatch an attack. Used by the client/handler
-	Dispatch(models.AttackParams) *models.AttackResponse
+	Dispatch(models.AttackParams) (*models.AttackResponse, error)
 	// Cancel a scheduled/on-going attack
 	Cancel(string, bool) error
 
@@ -35,6 +41,14 @@ type dispatcher struct {
 
 // NewDispatcher constructs a new instance of the dispatcher object.
 func NewDispatcher(db models.IAttackStore, fn AttackFunc) *dispatcher { // nolint: golint
+	if db == nil {
+		db = defaultDB
+	}
+
+	if fn == nil {
+		fn = defaultAttackFn
+	}
+
 	d := &dispatcher{
 		&sync.RWMutex{},
 		make(map[string]ITask),
@@ -48,7 +62,7 @@ func NewDispatcher(db models.IAttackStore, fn AttackFunc) *dispatcher { // nolin
 }
 
 // Dispatch implements the attack dispatcher method, used by the client to schedule new attacks
-func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse {
+func (d *dispatcher) Dispatch(params models.AttackParams) (*models.AttackResponse, error) {
 	task := NewTask(d.updateCh, params)
 	id := task.ID()
 	status := task.Status()
@@ -68,9 +82,12 @@ func (d *dispatcher) Dispatch(params models.AttackParams) *models.AttackResponse
 	d.log(fields).Info("dispatching new attack")
 	d.submitCh <- task
 
-	attackDetails, _ := d.db.GetByID(id)
+	attackDetails, err := d.db.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
 	resp := models.AttackResponse(attackDetails.AttackInfo)
-	return &resp
+	return &resp, nil
 }
 
 // Run the dispatcher event loop to dispatch new attacks,
@@ -99,7 +116,9 @@ func (d *dispatcher) Run(quit chan struct{}) {
 				"Status": update.Status,
 			}
 
+			d.mu.RLock()
 			task := d.tasks[update.ID]
+			d.mu.RUnlock()
 
 			if err := d.db.Update(task.ID(), attackDetailFromTask(task)); err != nil {
 				d.log(fields).WithError(err).Error("attack update error")
@@ -122,13 +141,14 @@ func (d *dispatcher) Cancel(id string, cancel bool) error {
 
 	d.log(fields).Info("canceling attack")
 
-	d.mu.Lock()
+	d.mu.RLock()
 	t, ok := d.tasks[id]
 	if !ok {
 		d.log(fields).Error("task not found")
+		d.mu.RUnlock()
 		return fmt.Errorf("cannot find task with id %s", id)
 	}
-	d.mu.Unlock()
+	d.mu.RUnlock()
 
 	if cancel {
 		err := t.Cancel()
@@ -149,7 +169,10 @@ func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
 
 	d.log(fields).Debug("getting attack status")
 
-	attackDetails, _ := d.db.GetByID(id)
+	attackDetails, err := d.db.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
 	resp := models.AttackResponse(attackDetails.AttackInfo)
 	return &resp, nil
 }
