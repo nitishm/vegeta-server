@@ -2,9 +2,10 @@ package vegeta
 
 import (
 	"bytes"
-	"github.com/pkg/errors"
 	"reflect"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func Test_addID(t *testing.T) {
@@ -88,7 +89,8 @@ func TestFormat(t *testing.T) {
 			if g := ff.SplitFormat(); !reflect.DeepEqual(g, tt.want.fs) {
 				t.Errorf("SplitFormat() = %v, want %v", g, tt.want.fs)
 			}
-			if b, err := ff.GetTimeBucketOfHistogram(); !reflect.DeepEqual(string(b), string(tt.want.buk)) && !reflect.DeepEqual(err.Error(), tt.want.err.Error()) {
+			b, err := ff.GetTimeBucketOfHistogram()
+			if !reflect.DeepEqual(string(b), string(tt.want.buk)) && !reflect.DeepEqual(err.Error(), tt.want.err.Error()) {
 				t.Errorf("GetTimeBucketOfHistogram() Bucket = %v, want %v", b, tt.want.buk)
 				t.Errorf("GetTimeBucketOfHistogram() Error = %v, want %v", err, tt.want.err)
 			}
