@@ -9,7 +9,7 @@ import (
 	"strings"
 	"vegeta-server/models"
 
-	"github.com/tsenart/vegeta/lib"
+	vegeta "github.com/tsenart/vegeta/lib"
 )
 
 // Format defines a type for the format query param
@@ -24,8 +24,11 @@ const (
 	HistogramFormat Format = "histogram"
 	// BinaryFormat typedef for query param "binary"
 	BinaryFormat Format = "binary"
+	// DefaultBucketString Default Bucket String
+	DefaultBucketString string = "0,500ms,1s,1.5s,2s,2.5s,3s"
 )
 
+// SplitFormat splits the Format into sub-Formats separated by '-' using StringsToFormat
 func (f Format) SplitFormat() (fs []Format) {
 	sf := string(f)
 	sli := strings.Split(sf, "-")
@@ -35,11 +38,13 @@ func (f Format) SplitFormat() (fs []Format) {
 	return
 }
 
+// GetFormat returns the actual Format string. It is useful in case of Clubbed Format string
 func (f Format) GetFormat() Format {
 	fs := f.SplitFormat()
 	return fs[0]
 }
 
+// GetTimeBucketOfHistogram returns time duration Bucket for the histogram format string
 func (f Format) GetTimeBucketOfHistogram() (buk []byte, err error) {
 	fs := f.SplitFormat()
 	if fs[0] != HistogramFormat {
@@ -48,7 +53,8 @@ func (f Format) GetTimeBucketOfHistogram() (buk []byte, err error) {
 	return []byte(fmt.Sprintf("[%s]", fs[1])), err
 }
 
-func (f Format) StringsToFormat(sli ...string) Format {
+// StringsToFormat takes string slice and returns a new Format string by separating them using '-'
+func StringsToFormat(sli ...string) Format {
 	if len(sli) == 0 {
 		return JSONFormat // Default Format
 	}

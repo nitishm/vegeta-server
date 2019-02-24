@@ -33,8 +33,8 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 	id := c.Param("attackID")
 
 	format := vegeta.Format(c.DefaultQuery("format", "json"))
-	bucket := c.DefaultQuery("bucket", "0,500ms,1s,1.5s,2s,2.5s,3s")
-	format = format.StringsToFormat(string(format), bucket)
+	bucket := c.DefaultQuery("bucket", vegeta.DefaultBucketString)
+	format = vegeta.StringsToFormat(string(format), bucket)
 
 	resp, err := e.reporter.GetInFormat(id, format)
 	if err != nil {
