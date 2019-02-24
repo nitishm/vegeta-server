@@ -126,6 +126,11 @@ func (d *dispatcher) Run(quit chan struct{}) {
 			}
 			d.log(fields).Debug("received update for attack")
 		case <-quit:
+			d.mu.RLock()
+			for _, task := range d.tasks {
+				task.Cancel()
+			}
+			d.mu.RUnlock()
 			d.log(nil).Warning("gracefully shutting down the dispatcher")
 			return
 		}
