@@ -16,7 +16,11 @@ func (e *Endpoints) PostAttackEndpoint(c *gin.Context) {
 	}
 
 	// Submit the attack
-	resp := e.dispatcher.Dispatch(attackParams)
+	resp, err := e.dispatcher.Dispatch(attackParams)
+	if err != nil {
+		ginErrInternalServerError(c, err)
+		return
+	}
 
 	c.JSON(http.StatusOK, resp)
 }
