@@ -9,7 +9,7 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
-func attackWithOpts(opts *AttackOpts) <-chan *vegeta.Result {
+func attackWithOpts(opts *AttackOpts) (*vegeta.Attacker, <-chan *vegeta.Result) {
 	atk := vegeta.NewAttacker(
 		vegeta.Redirects(opts.Redirects),
 		vegeta.Timeout(opts.Timeout),
@@ -23,7 +23,7 @@ func attackWithOpts(opts *AttackOpts) <-chan *vegeta.Result {
 
 	tr := vegeta.NewStaticTargeter(opts.Target)
 
-	return atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
+	return atk, atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
 }
 
 // Attack implements the AttackFunc type for a vegeta based attacker
@@ -33,7 +33,7 @@ func Attack(name string, params models.AttackParams, quit chan struct{}) (io.Rea
 		return nil, err
 	}
 
-	result := attackWithOpts(opts)
+	atk, result := attackWithOpts(opts)
 	if result == nil {
 		return nil, fmt.Errorf("empty channel returned")
 	}
@@ -51,6 +51,7 @@ loop:
 				return nil, err
 			}
 		case <-quit:
+			atk.Stop()
 			return nil, nil
 		}
 	}
