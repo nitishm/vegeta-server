@@ -1,6 +1,6 @@
-### REST API Usage (`api/v1`)
+# REST API Usage (`api/v1`)
 
-#### Submit an attack - `POST api/v1/attack`
+## Submit an attack - `POST api/v1/attack`
 
 ```
 curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://0.0.0.0:80/api/v1/attack","scheme": "http"}}' http://0.0.0.0:80/api/v1/attack
@@ -25,7 +25,7 @@ curl --header "Content-Type: application/json" --request POST --data '{"rate": 5
 ```
 *The returned JSON body includes the **Attack ID** (`494f98a2-7165-4d1b-8834-3226b49ab582`) and the **Attack Status** (`scheduled`).*
 
-#### View attack status by **Attack ID** - `GET api/v1/attack/<attackID>`
+## View attack status by **Attack ID** - `GET api/v1/attack/<attackID>`
 
 ```
 curl http://0.0.0.0:80/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
@@ -50,7 +50,7 @@ curl http://0.0.0.0:80/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 }
 ```
 
-#### List all attacks `GET /api/v1/attack`
+## List all attacks `GET /api/v1/attack`
 
 ```
 curl http://0.0.0.0:80/api/v1/attack/
@@ -91,11 +91,12 @@ curl http://0.0.0.0:80/api/v1/attack/
 ]
 ```
 
-#### View attack report by **Attack ID** - `GET /api/v1/report/<attackID>[?format=json/text/binary]`
+## View attack report by **Attack ID** - `GET /api/v1/report/<attackID>[?format=json/text/binary]`
 
 > The report endpoint only returns results for **Completed** attacks
 
-- *JSON Format*
+### JSON Format
+
 ```
 curl http://0.0.0.0:80/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?format=json
 ```
@@ -134,7 +135,8 @@ curl http://0.0.0.0:80/api/v1/report/d9788d4c-1bd7-48e9-92e4-f8d53603a483?format
 }
 ```
 
-- *Text Format*
+### Text Format
+
 ```
 curl http://0.0.0.0:80/api/v1/report/9aea25c6-3dcf-4f14-808f-5e499d1d0074?format=text
 ```
@@ -150,7 +152,7 @@ Status Codes  [code:count]             404:200
 Error Set:
 404 Not Found
 ```
-#### List all attack reports - `GET api/v1/report`
+## List all attack reports - `GET api/v1/report`
 
 ```
 curl http://0.0.0.0:80/api/v1/report/
