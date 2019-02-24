@@ -61,7 +61,7 @@ func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 
 					d.
 						On("Dispatch", attackParams).
-						Return(nil)
+						Return(nil, nil)
 					bAttackParamsBody, _ := json.Marshal(attackParams)
 					attackParamsBody := string(bAttackParamsBody)
 
@@ -89,7 +89,7 @@ func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 
 					d.
 						On("Dispatch", attackParams).
-						Return(nil)
+						Return(nil, nil)
 					bAttackParamsBody, _ := json.Marshal(attackParams)
 					attackParamsBody := string(bAttackParamsBody)
 
