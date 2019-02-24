@@ -209,6 +209,40 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 				wantCode: http.StatusOK,
 			},
 		},
+		{
+			name: "OK - histogram",
+			params: params{
+				setup: func() (reporter.IReporter, *http.Request) {
+					r := &rmock.IReporter{}
+					r.
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.HistogramFormat), vegeta.DefaultBucketString)).
+						Return([]byte{}, nil)
+
+					// Setup router
+					req, _ := http.NewRequest("GET", "/api/v1/report/123?format=histogram", nil)
+
+					return r, req
+				},
+				wantCode: http.StatusOK,
+			},
+		},
+		{
+			name: "I",
+			params: params{
+				setup: func() (reporter.IReporter, *http.Request) {
+					r := &rmock.IReporter{}
+					r.
+						On("GetInFormat", "123", vegeta.StringsToFormat(string(vegeta.HistogramFormat), vegeta.DefaultBucketString)).
+						Return([]byte{}, nil)
+
+					// Setup router
+					req, _ := http.NewRequest("GET", "/api/v1/report/123?format=histogram", nil)
+
+					return r, req
+				},
+				wantCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
