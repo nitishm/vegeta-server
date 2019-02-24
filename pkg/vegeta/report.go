@@ -3,11 +3,13 @@ package vegeta
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"vegeta-server/models"
 
-	vegeta "github.com/tsenart/vegeta/lib"
+	"github.com/tsenart/vegeta/lib"
 )
 
 // Format defines a type for the format query param
@@ -19,10 +21,43 @@ const (
 	// TextFormat typedef for query param "text"
 	TextFormat Format = "text"
 	// HistogramFormat typedef for query param "histogram"
-	//HistogramFormat Format = "histogram"
+	HistogramFormat Format = "histogram"
 	// BinaryFormat typedef for query param "binary"
 	BinaryFormat Format = "binary"
 )
+
+func (f Format) SplitFormat() (fs []Format) {
+	sf := string(f)
+	sli := strings.Split(sf, "-")
+	for _, s := range sli {
+		fs = append(fs, Format(s))
+	}
+	return
+}
+
+func (f Format) GetFormat() Format {
+	fs := f.SplitFormat()
+	return fs[0]
+}
+
+func (f Format) GetTimeBucketOfHistogram() (buk []byte, err error) {
+	fs := f.SplitFormat()
+	if fs[0] != HistogramFormat {
+		return buk, errors.New("time bucket can be obtained by histogram format only")
+	}
+	return []byte(fmt.Sprintf("[%s]", fs[1])), err
+}
+
+func (f Format) StringsToFormat(sli ...string) Format {
+	if len(sli) == 0 {
+		return JSONFormat // Default Format
+	}
+	str := sli[0]
+	for _, s := range sli[1:] {
+		str = fmt.Sprintf("%s-%s", str, s)
+	}
+	return Format(str)
+}
 
 // CreateReportFromReader takes in an io.Reader with the vegeta gob, encoded result and
 // returns the decoded result as a byte array
@@ -33,6 +68,31 @@ func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte,
 
 	var report vegeta.Report = &m
 
+	var rep vegeta.Reporter
+
+	fs := format.GetFormat()
+
+	switch fs {
+	case JSONFormat:
+		// Create a new reporter with the metrics
+		rep = vegeta.NewJSONReporter(&m)
+	case TextFormat:
+		rep = vegeta.NewTextReporter(&m)
+	case HistogramFormat:
+		var hist vegeta.Histogram
+		buck, err := format.GetTimeBucketOfHistogram()
+		if err != nil {
+			return nil, err
+		}
+		if err = hist.Buckets.UnmarshalText(buck); err != nil { // Default bucket = "[0,500ms,1s,1.5s,2s,2.5s,3s]"
+			return nil, err
+		}
+		rep, report = vegeta.NewHistogramReporter(&hist), &hist
+	default:
+		return nil, fmt.Errorf("format %s not supported", format)
+	}
+
+	rc, _ := report.(vegeta.Closer)
 decode:
 	for {
 		var r vegeta.Result
@@ -46,26 +106,8 @@ decode:
 
 		report.Add(&r)
 	}
-
-	rc := report.(vegeta.Closer)
-	rc.Close()
-
-	var rep vegeta.Reporter
-
-	switch format {
-	case JSONFormat:
-		// Create a new reporter with the metrics
-		rep = vegeta.NewJSONReporter(&m)
-	case TextFormat:
-		rep = vegeta.NewTextReporter(&m)
-	// TODO: Figure out how to provide historgram report
-	//case HistogramFormat:
-	//      var hist vegeta.Histogram
-	//      if err := hist.Buckets.UnmarshalText([]byte(typ[4:])); err != nil {
-	//              return err
-	//      }
-	default:
-		return nil, fmt.Errorf("format %s not supported", format)
+	if rc != nil {
+		rc.Close()
 	}
 
 	var b []byte
@@ -75,8 +117,9 @@ decode:
 		return nil, err
 	}
 
-	if format == JSONFormat {
-		// Add ID to the report struct
+	// Add ID to the report
+	switch fs {
+	case JSONFormat:
 		var jsonReportResponse models.JSONReportResponse
 		err = json.Unmarshal(buf.Bytes(), &jsonReportResponse)
 		if err != nil {
@@ -84,7 +127,7 @@ decode:
 		}
 		jsonReportResponse.ID = id
 		return json.Marshal(jsonReportResponse)
-	} else if format == TextFormat {
+	case TextFormat, HistogramFormat:
 		return addID(buf, id), nil
 	}
 
