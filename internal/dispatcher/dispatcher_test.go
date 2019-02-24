@@ -249,15 +249,15 @@ func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
 		t.Fail()
 	}
 
-	time.Sleep(time.Second * 2)
-
-	for _, task := range d.tasks {
-		id := task.ID()
-		err := d.Cancel(id, true)
-		if err == nil {
-			t.Fail()
+	time.AfterFunc(time.Second, func() {
+		for _, task := range d.tasks {
+			id := task.ID()
+			err := d.Cancel(id, true)
+			if err == nil {
+				t.Fail()
+			}
 		}
-	}
+	})
 }
 
 func Test_dispatcher_Cancel_Error_not_found(t *testing.T) {
