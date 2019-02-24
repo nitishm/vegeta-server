@@ -194,7 +194,6 @@ func Test_dispatcher_Run_Error_GetByID(t *testing.T) {
 }
 
 func Test_dispatcher_Cancel(t *testing.T) {
-	t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
