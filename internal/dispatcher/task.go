@@ -154,9 +154,8 @@ func (t *task) Cancel() error {
 		return fmt.Errorf("cannot cancel task %s with status %s", id, status)
 	}
 
-	t.quit <- struct{}{}
-
 	t.mu.Lock()
+	t.quit <- struct{}{}
 	t.status = models.AttackResponseStatusCanceled
 	t.mu.Unlock()
 
@@ -186,8 +185,8 @@ func (t *task) SendUpdate() {
 	t.mu.Unlock()
 
 	t.updateCh <- UpdateMessage{
-		t.id,
-		t.status,
+		t.ID(),
+		t.Status(),
 	}
 }
 
