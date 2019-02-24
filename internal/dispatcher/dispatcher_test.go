@@ -159,6 +159,9 @@ func Test_dispatcher_Run(t *testing.T) {
 	d := setupDispatcher(mockStore)
 
 	quit := make(chan struct{})
+	defer func() {
+		quit <- struct{}{}
+	}()
 
 	go d.Run(quit)
 
@@ -178,6 +181,9 @@ func Test_dispatcher_Run_Error_GetByID(t *testing.T) {
 	d := setupDispatcher(mockStore)
 
 	quit := make(chan struct{})
+	defer func() {
+		quit <- struct{}{}
+	}()
 
 	go d.Run(quit)
 
@@ -200,6 +206,9 @@ func Test_dispatcher_Cancel(t *testing.T) {
 	})
 
 	quit := make(chan struct{})
+	defer func() {
+		quit <- struct{}{}
+	}()
 
 	go d.Run(quit)
 
@@ -229,6 +238,9 @@ func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
 	})
 
 	quit := make(chan struct{})
+	defer func() {
+		quit <- struct{}{}
+	}()
 
 	go d.Run(quit)
 
@@ -260,6 +272,9 @@ func Test_dispatcher_Cancel_Error_not_found(t *testing.T) {
 	})
 
 	quit := make(chan struct{})
+	defer func() {
+		quit <- struct{}{}
+	}()
 
 	go d.Run(quit)
 
