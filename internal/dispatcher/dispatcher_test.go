@@ -194,6 +194,8 @@ func Test_dispatcher_Run_Error_GetByID(t *testing.T) {
 }
 
 func Test_dispatcher_Cancel(t *testing.T) {
+	// Skip for now due to travis CI hang
+	//t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
@@ -202,7 +204,7 @@ func Test_dispatcher_Cancel(t *testing.T) {
 
 	d := NewDispatcher(mockStore, func(s string, params models.AttackParams, i chan struct{}) (reader io.Reader, e error) {
 		<-i
-		return strings.NewReader("hello world"), nil
+		return nil, nil
 	})
 
 	quit := make(chan struct{})
@@ -216,6 +218,9 @@ func Test_dispatcher_Cancel(t *testing.T) {
 	if err != nil || resp == nil {
 		t.Fail()
 	}
+
+	tCh := time.After(time.Second)
+	<-tCh
 
 	for _, task := range d.tasks {
 		id := task.ID()
@@ -227,7 +232,8 @@ func Test_dispatcher_Cancel(t *testing.T) {
 }
 
 func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
-	t.Skip()
+	// Skip for now due to travis CI hang
+	//t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
@@ -239,9 +245,6 @@ func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
 	})
 
 	quit := make(chan struct{})
-	defer func() {
-		quit <- struct{}{}
-	}()
 
 	go d.Run(quit)
 
@@ -250,19 +253,21 @@ func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
 		t.Fail()
 	}
 
-	time.AfterFunc(time.Second, func() {
-		for _, task := range d.tasks {
-			id := task.ID()
-			err := d.Cancel(id, true)
-			if err == nil {
-				t.Fail()
-			}
+	tCh := time.After(time.Second)
+	<-tCh
+
+	for _, task := range d.tasks {
+		id := task.ID()
+		err := d.Cancel(id, true)
+		if err == nil {
+			t.Fail()
 		}
-	})
+	}
 }
 
 func Test_dispatcher_Cancel_Error_not_found(t *testing.T) {
-	t.Skip()
+	// Skip for now due to travis CI hang
+	//t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
