@@ -48,7 +48,7 @@ func (f Format) GetFormat() Format {
 func (f Format) GetTimeBucketOfHistogram() (buk []byte, err error) {
 	fs := f.SplitFormat()
 	if fs[0] != HistogramFormat {
-		return buk, errors.New("time bucket can be obtained by histogram format only")
+		return buk, fmt.Errorf("time bucket can be obtained by histogram format only")
 	}
 	return []byte(fmt.Sprintf("[%s]", fs[1])), err
 }
