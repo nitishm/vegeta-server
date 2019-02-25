@@ -194,8 +194,6 @@ func Test_dispatcher_Run_Error_GetByID(t *testing.T) {
 }
 
 func Test_dispatcher_Cancel(t *testing.T) {
-	// Skip for now due to travis CI hang
-	//t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
@@ -232,8 +230,6 @@ func Test_dispatcher_Cancel(t *testing.T) {
 }
 
 func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
-	// Skip for now due to travis CI hang
-	//t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
@@ -266,8 +262,6 @@ func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
 }
 
 func Test_dispatcher_Cancel_Error_not_found(t *testing.T) {
-	// Skip for now due to travis CI hang
-	//t.Skip()
 	mockStore := &smocks.IAttackStore{}
 
 	mockStore.On("Update", mock.Anything, mock.Anything).Return(nil)
