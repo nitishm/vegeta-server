@@ -73,6 +73,34 @@ func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 			},
 		},
 		{
+			name: "Internal Server Error",
+			params: params{
+				func() (dispatcher.IDispatcher, *http.Request) {
+					attackParams := models.AttackParams{
+						Rate: 1,
+						Target: models.Target{
+							Method: "GET",
+							URL:    "localhost:80/api/v1/",
+							Scheme: "http",
+						},
+						Duration: "1s",
+					}
+					d := new(dmocks.IDispatcher)
+
+					d.
+						On("Dispatch", attackParams).
+						Return(nil, fmt.Errorf("some error found"))
+					bAttackParamsBody, _ := json.Marshal(attackParams)
+					attackParamsBody := string(bAttackParamsBody)
+
+					req, _ := http.NewRequest("POST", "/api/v1/attack", strings.NewReader(attackParamsBody))
+
+					return d, req
+				},
+				http.StatusInternalServerError,
+			},
+		},
+		{
 			name: "OK",
 			params: params{
 				func() (dispatcher.IDispatcher, *http.Request) {
