@@ -81,7 +81,7 @@ func (r *reporter) GetInFormat(id string, format vegeta.Format) ([]byte, error) 
 	}
 
 	result := attack.Result
-	if format.GetFormat() == vegeta.BinaryFormatString {
+	if format.String() == vegeta.BinaryFormatString {
 		return result, nil
 	}
 

@@ -34,7 +34,7 @@ func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte,
 
 	var rep vegeta.Reporter
 
-	fs := format.GetFormat()
+	fs := format.String()
 
 	switch fs {
 	case JSONFormatString:
@@ -44,9 +44,9 @@ func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte,
 		rep = vegeta.NewTextReporter(&m)
 	case HistogramFormatString:
 		var hist vegeta.Histogram
-		meta := format.GetMetaInfo()
+		meta := format.Meta()
 		// Default bucket = "[0,500ms,1s,1.5s,2s,2.5s,3s]"
-		if err := hist.Buckets.UnmarshalText([]byte("[" + meta[0] + "]")); err != nil {
+		if err := hist.Buckets.UnmarshalText([]byte("[" + meta["bucket"] + "]")); err != nil {
 			return nil, err
 		}
 		rep, report = vegeta.NewHistogramReporter(&hist), &hist

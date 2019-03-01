@@ -215,7 +215,7 @@ func TestEndpoints_GetReportByIDEndpoint(t *testing.T) {
 				setup: func() (reporter.IReporter, *http.Request) {
 					r := &rmock.IReporter{}
 					h := vegeta.NewFormat("histogram")
-					h.SetFormat(vegeta.DefaultBucketString)
+					h.SetMeta("bucket", vegeta.DefaultBucketString)
 					r.
 						On("GetInFormat", "123", h).
 						Return([]byte{}, nil)

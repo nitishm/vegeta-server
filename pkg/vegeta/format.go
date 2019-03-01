@@ -1,103 +1,126 @@
 package vegeta
 
+// MetaInfo provide map to store meta information for Format
+type MetaInfo map[string]string
+
 // Format defines a type for the format query param
 type Format interface {
-	GetFormat() string
-	SetFormat(meta ...string)
-	GetMetaInfo() []string
+	// fmt.Stringer
+	String() string
+
+	Meta() MetaInfo
+	SetMeta(key, value string)
 }
 
 // NewFormat returns a new Format in accordance with the provided type string, by default it is JSON
 func NewFormat(typ string) Format {
 	switch typ {
 	case "json":
-		f := JSONFormat("json")
-		return &f
+		return NewJSONFormat()
 	case "text":
-		f := TextFormat("text")
-		return &f
+		return NewTextFormat()
 	case "binary":
-		f := BinaryFormat("binary")
-		return &f
+		return NewBinaryFormat()
 	case "histogram":
-		return &HistogramFormat{
-			data: "histogram",
-		}
+		return NewHistogramFormat()
 	}
-	return new(JSONFormat) // default
+	return NewJSONFormat() // default
 }
 
 // JSONFormat typedef for query param "json"
 type JSONFormat string
 
-// SetFormat will set the meta information strings of the JSONFormat
-func (j *JSONFormat) SetFormat(_ ...string) {
-	*j = "json"
+// NewJSONFormat returns a new Format of JSON type
+func NewJSONFormat() *JSONFormat {
+	f := JSONFormat("json")
+	return &f
 }
 
-// GetFormat will return the type of the JSONFormat
-func (j *JSONFormat) GetFormat() string {
+// SetMeta will set the meta information
+func (j *JSONFormat) SetMeta(key, value string) {
+}
+
+// String implements Stringer for JSONFormat
+func (j *JSONFormat) String() string {
 	return string(*j)
 }
 
-// GetMetaInfo will return the meta information of the JSONFormat
-func (j *JSONFormat) GetMetaInfo() (m []string) {
-	return
+// Meta returns the meta information stored in the Format
+func (j *JSONFormat) Meta() (m MetaInfo) {
+	return nil
 }
 
 // TextFormat typedef for query param "text"
 type TextFormat string
 
-// SetFormat will set the meta information strings of the TextFormat
-func (t *TextFormat) SetFormat(_ ...string) {
-	*t = "text"
+// NewTextFormat returns a new Format of Text type
+func NewTextFormat() *TextFormat {
+	f := TextFormat("text")
+	return &f
 }
 
-// GetFormat will return the type of the TextFormat
-func (t *TextFormat) GetFormat() string {
-	return string(*t)
+// SetMeta will set the meta information
+func (j *TextFormat) SetMeta(key, value string) {
 }
 
-// GetMetaInfo will return the meta information of the TextFormat
-func (t *TextFormat) GetMetaInfo() (m []string) {
-	return
+// String implements Stringer for TextFormat
+func (j *TextFormat) String() string {
+	return string(*j)
+}
+
+// Meta returns the meta information stored in the Format
+func (j *TextFormat) Meta() (m MetaInfo) {
+	return nil
 }
 
 // BinaryFormat typedef for query param "binary"
 type BinaryFormat string
 
-// SetFormat will set the meta information strings of the BinaryFormat
-func (b *BinaryFormat) SetFormat(_ ...string) {
-	*b = "binary"
+// NewBinaryFormat returns a new Format of Binary type
+func NewBinaryFormat() *BinaryFormat {
+	f := BinaryFormat("binary")
+	return &f
 }
 
-// GetFormat will return the type of the BinaryFormat
-func (b *BinaryFormat) GetFormat() string {
+// SetMeta will set the meta information
+func (b *BinaryFormat) SetMeta(key, value string) {
+}
+
+// String implements Stringer for BinaryFormat
+func (b *BinaryFormat) String() string {
 	return string(*b)
 }
 
-// GetMetaInfo will return the meta information of the BinaryFormat
-func (b *BinaryFormat) GetMetaInfo() (m []string) {
+// Meta returns the meta information stored in the Format
+func (b *BinaryFormat) Meta() (m MetaInfo) {
 	return
 }
 
 // HistogramFormat typedef for query param "histogram"
 type HistogramFormat struct {
-	data, metadata string
+	repr string
+	meta MetaInfo
 }
 
-// SetFormat will set the meta information strings of the HistogramFormat
-func (h *HistogramFormat) SetFormat(meta ...string) {
-	h.data = "histogram"
-	h.metadata = meta[0]
+// NewHistogramFormat returns a new Format of Histogram type
+func NewHistogramFormat() *HistogramFormat {
+	return &HistogramFormat{
+		repr: "histogram",
+		meta: make(MetaInfo),
+	}
 }
 
-// GetFormat will return the type of the HistogramFormat
-func (h *HistogramFormat) GetFormat() string {
-	return h.data
+// SetMeta will set the meta information
+func (h *HistogramFormat) SetMeta(key, value string) {
+	h.meta[key] = value
 }
 
-// GetMetaInfo will return the meta information of the HistogramFormat
-func (h *HistogramFormat) GetMetaInfo() []string {
-	return []string{h.metadata}
+// String implements Stringer for HistogramFormat
+func (h *HistogramFormat) String() string {
+	return h.repr
+}
+
+// Meta returns the meta information stored in the Format
+func (h *HistogramFormat) Meta() MetaInfo {
+	return h.meta
 }

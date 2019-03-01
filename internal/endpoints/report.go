@@ -34,7 +34,7 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 
 	format := vegeta.NewFormat(c.DefaultQuery("format", "json"))
 	bucket := c.DefaultQuery("bucket", vegeta.DefaultBucketString)
-	format.SetFormat(bucket)
+	format.SetMeta("bucket", bucket)
 
 	resp, err := e.reporter.GetInFormat(id, format)
 	if err != nil {
@@ -42,7 +42,7 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 		return
 	}
 
-	switch format.GetFormat() {
+	switch format.String() {
 	case vegeta.JSONFormatString:
 		c.Header("Content-Type", "application/json")
 		var jsonReport models.JSONReportResponse
