@@ -39,7 +39,10 @@ func (r *reporter) Get(id string) ([]byte, error) {
 	}
 
 	result := attack.Result
-	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), attack.ID, vegeta.JSONFormat)
+	report, err := vegeta.CreateReportFromReader(
+		bytes.NewBuffer(result), attack.ID,
+		vegeta.NewFormat(vegeta.JSONFormatString),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +61,10 @@ func (r *reporter) GetAll() [][]byte {
 		}
 
 		// Create report for all other attacks
-		report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(attack.Result), attack.ID, vegeta.JSONFormat)
+		report, err := vegeta.CreateReportFromReader(
+			bytes.NewBuffer(attack.Result), attack.ID,
+			vegeta.NewFormat(vegeta.JSONFormatString),
+		)
 		if err != nil {
 			continue
 		}
@@ -75,7 +81,7 @@ func (r *reporter) GetInFormat(id string, format vegeta.Format) ([]byte, error) 
 	}
 
 	result := attack.Result
-	if format == vegeta.BinaryFormat {
+	if format.GetFormat() == vegeta.BinaryFormatString {
 		return result, nil
 	}
 

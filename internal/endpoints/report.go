@@ -32,9 +32,9 @@ func (e *Endpoints) GetReportEndpoint(c *gin.Context) {
 func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 	id := c.Param("attackID")
 
-	format := vegeta.Format(c.DefaultQuery("format", "json"))
+	format := vegeta.NewFormat(c.DefaultQuery("format", "json"))
 	bucket := c.DefaultQuery("bucket", vegeta.DefaultBucketString)
-	format = vegeta.StringsToFormat(string(format), bucket)
+	format.SetFormat(bucket)
 
 	resp, err := e.reporter.GetInFormat(id, format)
 	if err != nil {
@@ -43,7 +43,7 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 	}
 
 	switch format.GetFormat() {
-	case vegeta.JSONFormat:
+	case vegeta.JSONFormatString:
 		c.Header("Content-Type", "application/json")
 		var jsonReport models.JSONReportResponse
 		err = json.Unmarshal(resp, &jsonReport)
@@ -51,13 +51,13 @@ func (e *Endpoints) GetReportByIDEndpoint(c *gin.Context) {
 			ginErrInternalServerError(c, err)
 		}
 		c.JSON(http.StatusOK, jsonReport)
-	case vegeta.TextFormat:
+	case vegeta.TextFormatString:
 		c.Header("Content-Type", "text/plain")
 		c.String(http.StatusOK, "%s", resp)
-	case vegeta.BinaryFormat:
+	case vegeta.BinaryFormatString:
 		c.Header("Content-Type", "application/octet-stream")
 		c.Data(http.StatusOK, "application/octet-stream", resp)
-	case vegeta.HistogramFormat:
+	case vegeta.HistogramFormatString:
 		c.Header("Content-Type", "text/plain")
 		c.String(http.StatusOK, "%s", resp)
 	}
