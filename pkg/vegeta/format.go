@@ -37,6 +37,7 @@ func NewJSONFormat() *JSONFormat {
 }
 
 // SetMeta will set the meta information
+// no-op method
 func (j *JSONFormat) SetMeta(key, value string) {
 }
 
@@ -46,6 +47,7 @@ func (j *JSONFormat) String() string {
 }
 
 // Meta returns the meta information stored in the Format
+// no-op method
 func (j *JSONFormat) Meta() (m MetaInfo) {
 	return nil
 }
@@ -60,6 +62,7 @@ func NewTextFormat() *TextFormat {
 }
 
 // SetMeta will set the meta information
+// no-op method
 func (j *TextFormat) SetMeta(key, value string) {
 }
 
@@ -69,6 +72,7 @@ func (j *TextFormat) String() string {
 }
 
 // Meta returns the meta information stored in the Format
+// no-op method
 func (j *TextFormat) Meta() (m MetaInfo) {
 	return nil
 }
@@ -83,6 +87,7 @@ func NewBinaryFormat() *BinaryFormat {
 }
 
 // SetMeta will set the meta information
+// no-op method
 func (b *BinaryFormat) SetMeta(key, value string) {
 }
 
@@ -92,6 +97,7 @@ func (b *BinaryFormat) String() string {
 }
 
 // Meta returns the meta information stored in the Format
+// no-op method
 func (b *BinaryFormat) Meta() (m MetaInfo) {
 	return
 }
