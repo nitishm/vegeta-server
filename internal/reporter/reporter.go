@@ -49,7 +49,7 @@ func (r *reporter) Get(id string) ([]byte, error) {
 // GetAll returns a list of attack reports in byte array format
 // The default format, JSON is returned.
 func (r *reporter) GetAll() [][]byte {
-	attacks := r.db.GetAll()
+	attacks := r.db.GetAll(make(models.FilterParams))
 	reports := make([][]byte, 0)
 	for _, attack := range attacks {
 		// Canceled attacks will have a nil result field

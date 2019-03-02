@@ -314,11 +314,11 @@ func Test_dispatcher_Get_Error_GetByID(t *testing.T) {
 func Test_dispatcher_List(t *testing.T) {
 	mockStore := &smocks.IAttackStore{}
 
-	mockStore.On("GetAll").Return([]models.AttackDetails{{}})
+	mockStore.On("GetAll", make(models.FilterParams)).Return([]models.AttackDetails{{}})
 
 	d := setupDispatcher(mockStore)
 
-	got := d.List()
+	got := d.List(make(models.FilterParams))
 	if len(got) == 0 {
 		t.Fail()
 	}
@@ -327,11 +327,11 @@ func Test_dispatcher_List(t *testing.T) {
 func Test_dispatcher_List_Empty(t *testing.T) {
 	mockStore := &smocks.IAttackStore{}
 
-	mockStore.On("GetAll").Return([]models.AttackDetails{})
+	mockStore.On("GetAll", make(models.FilterParams)).Return([]models.AttackDetails{})
 
 	d := setupDispatcher(mockStore)
 
-	got := d.List()
+	got := d.List(make(models.FilterParams))
 	if len(got) != 0 {
 		t.Fail()
 	}
