@@ -11,7 +11,7 @@ type IAttackStore interface {
 	Add(AttackDetails) error
 
 	// GetAll items
-	GetAll() []AttackDetails
+	GetAll(filters FilterParams) []AttackDetails
 	// GetByID gets an item by its ID
 	GetByID(string) (AttackDetails, error)
 
@@ -45,13 +45,20 @@ func (tm TaskMap) Add(attack AttackDetails) error {
 }
 
 // GetAll attacks and details from store
-func (tm TaskMap) GetAll() []AttackDetails {
+func (tm TaskMap) GetAll(filterParams FilterParams) []AttackDetails {
 	mu.RLock()
 	defer mu.RUnlock()
 
+	filters := createFilterChain(filterParams)
 	attacks := make([]AttackDetails, 0)
 	for _, attack := range tm {
+		for _, filter := range filters {
+			if !filter(attack) {
+				goto skip
+			}
+		}
 		attacks = append(attacks, attack)
+	skip:
 	}
 
 	return attacks
@@ -72,6 +79,10 @@ func (tm TaskMap) GetByID(id string) (AttackDetails, error) {
 
 // Update an attack detail in the store
 func (tm TaskMap) Update(id string, attack AttackDetails) error {
+	if attack.ID != id {
+		return fmt.Errorf("update ID %s and attack ID %s do not match", id, attack.ID)
+	}
+
 	mu.RLock()
 	_, ok := tm[id]
 	mu.RUnlock()
@@ -101,4 +112,15 @@ func (tm TaskMap) Delete(id string) error {
 	delete(tm, id)
 
 	return nil
+}
+
+func createFilterChain(params FilterParams) []Filter {
+	filters := make([]Filter, 0)
+	if status, ok := params["status"]; ok {
+		filters = append(
+			filters,
+			StatusFilter(status.(string)),
+		)
+	}
+	return filters
 }

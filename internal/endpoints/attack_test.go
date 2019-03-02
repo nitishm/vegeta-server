@@ -73,7 +73,7 @@ func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 			},
 		},
 		{
-			name: "Internal Server Error",
+			name: "Internal Server Error - Dispatcher error",
 			params: params{
 				func() (dispatcher.IDispatcher, *http.Request) {
 					attackParams := models.AttackParams{
@@ -89,7 +89,7 @@ func TestEndpoints_PostAttackEndpoint(t *testing.T) {
 
 					d.
 						On("Dispatch", attackParams).
-						Return(nil, fmt.Errorf("some error found"))
+						Return(nil, fmt.Errorf("dispatcher error"))
 					bAttackParamsBody, _ := json.Marshal(attackParams)
 					attackParamsBody := string(bAttackParamsBody)
 
@@ -215,7 +215,9 @@ func TestEndpoints_GetAttackEndpoint(t *testing.T) {
 				setup: func() (iDispatcher dispatcher.IDispatcher, request *http.Request) {
 					d := &dmocks.IDispatcher{}
 					d.
-						On("List").
+						On("List", models.FilterParams{
+							"status": "",
+						}).
 						Return([]*models.AttackResponse{})
 
 					// Setup router

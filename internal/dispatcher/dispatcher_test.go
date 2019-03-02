@@ -1,5 +1,3 @@
-// +build !race
-
 package dispatcher
 
 import (
@@ -12,7 +10,6 @@ import (
 	"time"
 	"vegeta-server/models"
 	smocks "vegeta-server/models/mocks"
-	"vegeta-server/pkg/vegeta"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -203,7 +200,10 @@ func Test_dispatcher_Cancel(t *testing.T) {
 	mockStore.On("Add", mock.Anything).Return(nil)
 	mockStore.On("GetByID", mock.Anything).Return(models.AttackDetails{}, nil)
 
-	d := NewDispatcher(mockStore, vegeta.Attack)
+	d := NewDispatcher(mockStore, func(s string, params models.AttackParams, i chan struct{}) (reader io.Reader, e error) {
+		<-i
+		return nil, nil
+	})
 
 	quit := make(chan struct{})
 	defer func() {
@@ -212,18 +212,13 @@ func Test_dispatcher_Cancel(t *testing.T) {
 
 	go d.Run(quit)
 
-	resp, err := d.Dispatch(models.AttackParams{
-		Rate:     1,
-		Duration: "10s",
-		Target: models.Target{
-			Method: "GET",
-			URL:    "localhost:8080",
-			Scheme: "http",
-		},
-	})
+	resp, err := d.Dispatch(models.AttackParams{})
 	if err != nil || resp == nil {
 		t.Fail()
 	}
+
+	tCh := time.After(time.Second)
+	<-tCh
 
 	for _, task := range d.tasks {
 		id := task.ID()
@@ -241,29 +236,21 @@ func Test_dispatcher_Cancel_Error_completed(t *testing.T) {
 	mockStore.On("Add", mock.Anything).Return(nil)
 	mockStore.On("GetByID", mock.Anything).Return(models.AttackDetails{}, nil)
 
-	d := NewDispatcher(mockStore, vegeta.Attack)
+	d := NewDispatcher(mockStore, func(s string, params models.AttackParams, i chan struct{}) (reader io.Reader, e error) {
+		return strings.NewReader("hello world"), nil
+	})
 
 	quit := make(chan struct{})
-	defer func() {
-		quit <- struct{}{}
-	}()
 
 	go d.Run(quit)
 
-	resp, err := d.Dispatch(models.AttackParams{
-		Rate:     1,
-		Duration: "1s",
-		Target: models.Target{
-			Method: "GET",
-			URL:    "localhost:8080",
-			Scheme: "http",
-		},
-	})
+	resp, err := d.Dispatch(models.AttackParams{})
 	if err != nil || resp == nil {
 		t.Fail()
 	}
 
-	time.Sleep(time.Second * 2)
+	tCh := time.After(time.Second)
+	<-tCh
 
 	for _, task := range d.tasks {
 		id := task.ID()
@@ -281,7 +268,9 @@ func Test_dispatcher_Cancel_Error_not_found(t *testing.T) {
 	mockStore.On("Add", mock.Anything).Return(nil)
 	mockStore.On("GetByID", mock.Anything).Return(models.AttackDetails{}, nil)
 
-	d := NewDispatcher(mockStore, vegeta.Attack)
+	d := NewDispatcher(mockStore, func(s string, params models.AttackParams, i chan struct{}) (reader io.Reader, e error) {
+		return nil, nil
+	})
 
 	quit := make(chan struct{})
 	defer func() {
@@ -325,11 +314,11 @@ func Test_dispatcher_Get_Error_GetByID(t *testing.T) {
 func Test_dispatcher_List(t *testing.T) {
 	mockStore := &smocks.IAttackStore{}
 
-	mockStore.On("GetAll").Return([]models.AttackDetails{{}})
+	mockStore.On("GetAll", make(models.FilterParams)).Return([]models.AttackDetails{{}})
 
 	d := setupDispatcher(mockStore)
 
-	got := d.List()
+	got := d.List(make(models.FilterParams))
 	if len(got) == 0 {
 		t.Fail()
 	}
@@ -338,11 +327,11 @@ func Test_dispatcher_List(t *testing.T) {
 func Test_dispatcher_List_Empty(t *testing.T) {
 	mockStore := &smocks.IAttackStore{}
 
-	mockStore.On("GetAll").Return([]models.AttackDetails{})
+	mockStore.On("GetAll", make(models.FilterParams)).Return([]models.AttackDetails{})
 
 	d := setupDispatcher(mockStore)
 
-	got := d.List()
+	got := d.List(make(models.FilterParams))
 	if len(got) != 0 {
 		t.Fail()
 	}

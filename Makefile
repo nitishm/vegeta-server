@@ -5,9 +5,6 @@ DATE=$(shell date +'%FT%TZ%z')
 SERVER_DIR = cmd/server
 GO  = GO111MODULE=on go
 
-
-	
-
 all: fmt lint build test
 
 build: deps fmt
@@ -31,8 +28,11 @@ install:
 	$(shell ./scripts/make-install.sh)
 
 test:
-	${GO} test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
-	${GO} test -covermode=count -coverprofile=profile.cov ./...
+	${GO} clean -testcache ./...
+	${GO} test -v -race -covermode=atomic ./...
+
+	${GO} clean -testcache ./...
+	${GO} test -v -covermode=count -coverprofile=profile.cov ./...
 
 fmt:
 	${GO} fmt ./...
@@ -49,7 +49,6 @@ ineffassign:
 
 run: build
 	$(shell bin/vegeta-server --scheme=http --host=localhost --port=8000)
-
 
 container:
 	docker build -t vegeta-server:latest .

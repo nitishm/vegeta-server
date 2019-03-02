@@ -19,3 +19,27 @@ type AttackDetails struct {
 	AttackInfo
 	Result []byte `json:"result,omitempty"`
 }
+
+// FilterParams defines a map structure for the filter parameters received via
+// query params in the request URL
+type FilterParams map[string]interface{}
+
+// Filter defines a type that must be implemented by
+// an attack filter
+type Filter func(AttackDetails) bool
+
+// StatusFilter implements a attack status filter
+// in the Filter function format
+func StatusFilter(status string) Filter {
+	return func(a AttackDetails) bool {
+		if status == "" {
+			return true
+		}
+
+		if a.Status == AttackStatus(status) {
+			return true
+		}
+
+		return false
+	}
+}

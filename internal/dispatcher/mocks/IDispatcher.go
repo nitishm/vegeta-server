@@ -70,13 +70,13 @@ func (_m *IDispatcher) Get(_a0 string) (*models.AttackResponse, error) {
 	return r0, r1
 }
 
-// List provides a mock function with given fields:
-func (_m *IDispatcher) List() []*models.AttackResponse {
-	ret := _m.Called()
+// List provides a mock function with given fields: _a0
+func (_m *IDispatcher) List(_a0 models.FilterParams) []*models.AttackResponse {
+	ret := _m.Called(_a0)
 
 	var r0 []*models.AttackResponse
-	if rf, ok := ret.Get(0).(func() []*models.AttackResponse); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(models.FilterParams) []*models.AttackResponse); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.AttackResponse)

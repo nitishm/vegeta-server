@@ -39,7 +39,13 @@ func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 
 // GetAttackEndpoint implements a handler for the GET /api/v1/attack endpoint
 func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
-	resp := e.dispatcher.List()
+	filterMap := make(models.FilterParams)
+	status := c.DefaultQuery("status", "")
+	filterMap["status"] = status
+	resp := e.dispatcher.List(
+		//models.StatusFilter(status),
+		filterMap,
+	)
 
 	c.JSON(http.StatusOK, resp)
 }
