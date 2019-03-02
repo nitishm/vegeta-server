@@ -38,13 +38,13 @@ func (_m *IAttackStore) Delete(_a0 string) error {
 	return r0
 }
 
-// GetAll provides a mock function with given fields:
-func (_m *IAttackStore) GetAll() []models.AttackDetails {
-	ret := _m.Called()
+// GetAll provides a mock function with given fields: filters
+func (_m *IAttackStore) GetAll(filters models.FilterParams) []models.AttackDetails {
+	ret := _m.Called(filters)
 
 	var r0 []models.AttackDetails
-	if rf, ok := ret.Get(0).(func() []models.AttackDetails); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(models.FilterParams) []models.AttackDetails); ok {
+		r0 = rf(filters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.AttackDetails)

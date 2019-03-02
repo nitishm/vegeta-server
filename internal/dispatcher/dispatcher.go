@@ -27,7 +27,7 @@ type IDispatcher interface {
 	// Get the attack status, params and ID for a single attack
 	Get(string) (*models.AttackResponse, error)
 	// List the attack status, params and ID for all submitted attacks.
-	List() []*models.AttackResponse
+	List(models.FilterParams) []*models.AttackResponse
 }
 
 type dispatcher struct {
@@ -181,12 +181,12 @@ func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
 }
 
 // List all submitted attacks
-func (d *dispatcher) List() []*models.AttackResponse {
+func (d *dispatcher) List(filters models.FilterParams) []*models.AttackResponse {
 	d.log(nil).Debug("getting attack list")
 
 	responses := make([]*models.AttackResponse, 0)
 
-	for _, attackDetails := range d.db.GetAll() {
+	for _, attackDetails := range d.db.GetAll(filters) {
 		resp := models.AttackResponse(attackDetails.AttackInfo)
 		responses = append(responses, &resp)
 	}
