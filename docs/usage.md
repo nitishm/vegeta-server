@@ -142,6 +142,7 @@ curl http://0.0.0.0:80/api/v1/report/9aea25c6-3dcf-4f14-808f-5e499d1d0074?format
 ```
 
 ```text
+Id 9aea25c6-3dcf-4f14-808f-5e499d1d0074
 Requests      [total, rate]            200, 100.47
 Duration      [total, attack, wait]    1.993288918s, 1.990719s, 2.569918ms
 Latencies     [mean, 50, 95, 99, max]  2.136603ms, 1.642011ms, 4.151042ms, 9.884504ms, 15.338328ms
@@ -152,6 +153,41 @@ Status Codes  [code:count]             404:200
 Error Set:
 404 Not Found
 ```
+
+### Histogram Format `Default`
+
+```
+curl http://0.0.0.0/api/v1/report/b39cf62a-0141-4919-a9e0-38a007e59d8f?format=histogram
+```
+
+```histogram
+ID b39cf62a-0141-4919-a9e0-38a007e59d8f
+Bucket           #   %        Histogram
+[0s,     500ms]  0   0.00%    
+[500ms,  1s]     0   0.00%    
+[1s,     1.5s]   0   0.00%    
+[1.5s,   2s]     0   0.00%    
+[2s,     2.5s]   0   0.00%    
+[2.5s,   3s]     0   0.00%    
+[3s,     +Inf]   15  100.00%  ###########################################################################
+```
+
+### Histogram Format
+
+```
+curl http://0.0.0.0/api/v1/report/b39cf62a-0141-4919-a9e0-38a007e59d8f?format=histogram&bucket=0,2s,4s,6s,8s
+```
+
+```histogram
+ID b39cf62a-0141-4919-a9e0-38a007e59d8f
+Bucket         #   %       Histogram
+[0s,    2s]    0   0.00%   
+[2s,    4s]    3   20.00%  ###############
+[4s,    6s]    10  66.67%  ##################################################
+[6s,    8s]    2   13.33%  ##########
+[8s,    +Inf]  0   0.00%   
+```
+
 ## List all attack reports - `GET api/v1/report`
 
 ```
