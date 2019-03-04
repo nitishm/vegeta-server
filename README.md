@@ -74,15 +74,15 @@ make container_run
 ```
 > NOTE: `make container` and `make container_clean` can be used to build the Dockerfile and delete the container and image.
 
-### Documentation 
-
-- [REST API Usage](https://github.com/nitishm/vegeta-server/tree/master/docs/usage.md)
-
 ### Running tests
 
 ```
 make test
 ```
+
+## Documentation 
+
+- [REST API Usage](https://github.com/nitishm/vegeta-server/tree/master/docs/usage.md)
 
 ## Contributing
 
