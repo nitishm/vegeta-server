@@ -25,6 +25,71 @@ curl --header "Content-Type: application/json" --request POST --data '{"rate": 5
 ```
 *The returned JSON body includes the **Attack ID** (`494f98a2-7165-4d1b-8834-3226b49ab582`) and the **Attack Status** (`scheduled`).*
 
+### With Request Body
+
+The request body is passed along as **[base64](https://en.wikipedia.org/wiki/Base64)** encoded string, generated from the JSON request body.
+
+Example
+
+- **Original JSON Request Body**
+```json
+{
+	"rate": 1,
+	"duration": "5s",
+	"target": {
+		"method": "POST",
+		"URL": "http://localhost:80/api/v1/attack",
+		"scheme": "http"
+	}
+}
+```
+
+- **Convert to base64**
+```
+$ echo '{
+        "rate": 1,
+        "duration": "5s",
+        "target": {
+                "method": "POST",
+                "URL": "http://localhost:80/api/v1/attack",
+                "scheme": "http"
+        }
+}' | base64
+ewoJInJhdGUiOiAxLAoJImR1cmF0aW9uIjogIjVzIiwKCSJ0YXJnZXQiOiB7CgkJIm1ldGhvZCI6ICJQT1NUIiwKCQkiVVJMIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODAvYXBpL3YxL2F0dGFjayIsCgkJInNjaGVtZSI6ICJodHRwIgoJfQp9Cg==
+```
+
+- **Submit Attack**
+
+```
+curl --header "Content-Type: application/json" --request POST --data '{"rate": 5, "duration": "10s", "target": {"method": "POST", "URL": "http://localhost:80/api/v1/attack", "scheme": "http"}, "body": "ewoJInJhdGUiOiAxLAoJImR1cmF0aW9uIjogIjVzIiwKCSJ0YXJnZXQiOiB7CgkJIm1ldGhvZCI6ICJQT1NUIiwKCQkiVVJMIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODAvYXBpL3YxL2F0dGFjayIsCgkJInNjaGVtZSI6ICJodHRwIgoJfQp9Cg=="}' http://0.0.0.0:80/api/v1/attack
+```
+```json
+{
+  "id": "443101cb-ded8-4e39-aa6b-c745516d1ca7",
+  "status": "scheduled",
+  "params": {
+    "rate": 5,
+    "duration": "10s",
+    "body": "ewoJInJhdGUiOiAxLAoJImR1cmF0aW9uIjogIjVzIiwKCSJ0YXJnZXQiOiB7CgkJIm1ldGhvZCI6ICJQT1NUIiwKCQkiVVJMIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODAvYXBpL3YxL2F0dGFjayIsCgkJInNjaGVtZSI6ICJodHRwIgoJfQp9Cg==",
+    "target": {
+      "method": "POST",
+      "URL": "http://localhost:80/api/v1/attack",
+      "scheme": "http"
+    }
+  },
+  "created_at": "Sun, 03 Mar 2019 20:55:12 EST",
+  "updated_at": "Sun, 03 Mar 2019 20:55:12 EST"
+}
+```
+
+## Cancel an attack by **Attack ID** - `POST api/v1/attack/<attackID>/cancel`
+
+> SUCCESS - Returns Status Code 200 OK
+
+```
+curl --header "Content-Type: application/json" --request POST --data '{"cancel": true}' http://0.0.0.0:80/api/v1/attack/5ebdfe2a-5c98-4cd9-a9ce-a1af89f20d53/cancel
+```
+
 ## View attack status by **Attack ID** - `GET api/v1/attack/<attackID>`
 
 ```
@@ -91,7 +156,7 @@ curl http://0.0.0.0:80/api/v1/attack/
 ]
 ```
 
-## View attack report by **Attack ID** - `GET /api/v1/report/<attackID>[?format=json/text/binary]`
+## View attack report by **Attack ID** - `GET /api/v1/report/<attackID>[?format=json/text/binary/histogram]`
 
 > The report endpoint only returns results for **Completed** attacks
 
@@ -160,7 +225,7 @@ Error Set:
 curl http://0.0.0.0/api/v1/report/b39cf62a-0141-4919-a9e0-38a007e59d8f?format=histogram
 ```
 
-```histogram
+```text
 ID b39cf62a-0141-4919-a9e0-38a007e59d8f
 Bucket           #   %        Histogram
 [0s,     500ms]  0   0.00%    
@@ -178,7 +243,7 @@ Bucket           #   %        Histogram
 curl http://0.0.0.0/api/v1/report/b39cf62a-0141-4919-a9e0-38a007e59d8f?format=histogram&bucket=0,2s,4s,6s,8s
 ```
 
-```histogram
+```text
 ID b39cf62a-0141-4919-a9e0-38a007e59d8f
 Bucket         #   %       Histogram
 [0s,    2s]    0   0.00%   
