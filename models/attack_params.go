@@ -15,14 +15,14 @@ type AttackParams struct {
 	MaxBody     int64 `json:"max-body,omitempty"`
 	Redirects   int64 `json:"redirects,omitempty"`
 
-	Key       string `json:"key,omitempty"`
-	Laddr     string `json:"laddr,omitempty"`
-	Duration  string `json:"duration,omitempty" binding:"required"`
-	Body      string `json:"body,omitempty"`
-	Cert      string `json:"cert,omitempty"`
-	Resolvers string `json:"resolvers,omitempty"`
-	RootCerts string `json:"root-certs,omitempty"`
-	Timeout   string `json:"timeout,omitempty"`
+	Key       string   `json:"key,omitempty"`
+	Laddr     string   `json:"laddr,omitempty"`
+	Duration  string   `json:"duration,omitempty" binding:"required"`
+	Body      string   `json:"body,omitempty"`
+	Cert      string   `json:"cert,omitempty"`
+	Resolvers string   `json:"resolvers,omitempty"`
+	RootCerts []string `json:"root-certs,omitempty"`
+	Timeout   string   `json:"timeout,omitempty"`
 
 	H2c       bool `json:"h2c,omitempty"`
 	HTTP2     bool `json:"http2,omitempty"`

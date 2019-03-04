@@ -1,6 +1,7 @@
 package vegeta
 
 import (
+	"encoding/base64"
 	"net"
 	"net/http"
 	"strings"
@@ -61,21 +62,22 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 		return nil, err
 	}
 
-	// TODO: Set TLS configuration
-
-	// TODO: Set target body
+	bBody, err := base64.StdEncoding.DecodeString(params.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	// Set Target
 	tgt := vegeta.Target{
 		Method: params.Target.Method,
 		URL:    params.Target.URL,
 		Header: hdr,
+		Body:   bBody,
 	}
 
 	opts := &AttackOpts{
 		Name:      name,
 		Target:    tgt,
-		Insecure:  params.Insecure,
 		Duration:  dur,
 		Timeout:   timeout,
 		Rate:      rate,
@@ -84,10 +86,14 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 		Keepalive: params.Keepalive,
 		Resolvers: resolvers,
 		Laddr:     struct{ *net.IPAddr }{laddr},
+		Cert:      params.Cert,
+		Key:       params.Key,
+		RootCerts: params.RootCerts,
+		Insecure:  params.Insecure,
+		HTTP2:     params.HTTP2,
+		H2c:       params.H2c,
+		Workers:   uint64(params.Workers),
 	}
-	opts.HTTP2 = params.HTTP2
-	opts.H2c = params.H2c
-	opts.Workers = uint64(params.Workers)
 
 	return opts, nil
 }
