@@ -1,6 +1,7 @@
 COMMIT=$(shell git rev-parse HEAD)
 VERSION=$(shell git describe --tags --exact-match --always)
 DATE=$(shell date +'%FT%TZ%z')
+CONTAINER_NAME ?= vegeta
 
 SERVER_DIR = cmd/server
 GO  = GO111MODULE=on go
@@ -53,11 +54,13 @@ run: build
 container:
 	docker build -t vegeta-server:latest .
 
-container_run: container
-	@docker run -d -p 8000:80 --name vegeta vegeta-server:latest --rm
+container_stop:
+	@docker rm -f '$(CONTAINER_NAME)' || true
 
-container_clean:
-	@docker rm -f vegeta || true
+container_run: container
+	@docker run -d -p 8000:80 --name '$(CONTAINER_NAME)' vegeta-server:latest --rm
+
+container_clean: container_stop
 	@docker image rm vegeta-server:latest || true
 
 .PHONY: all build clean deps update-deps install test fmt validate lint ineffassign run
