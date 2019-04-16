@@ -58,7 +58,7 @@ container_stop:
 	@docker rm -f '$(CONTAINER_NAME)' || true
 
 container_run: container
-	@docker run -d -p 8000:80 --name '$(CONTAINER_NAME)' vegeta-server:latest --rm
+	@docker run --rm -d -p 8000:80 --name '$(CONTAINER_NAME)' vegeta-server:latest
 
 container_clean: container_stop
 	@docker image rm vegeta-server:latest || true

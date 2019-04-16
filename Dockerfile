@@ -1,8 +1,11 @@
-FROM golang:1.11
+# Build stage
+FROM golang:1.12 as build-env
 ENV ROOT=/vegeta-server
 ADD . $ROOT
-RUN chmod 777 $ROOT/docker-entrypoint.sh
 WORKDIR $ROOT
 RUN make build
-ENTRYPOINT ["./docker-entrypoint.sh"]
-EXPOSE 80
+
+# Final stage
+FROM gcr.io/distroless/static
+COPY --from=build-env /vegeta-server/bin/vegeta-server .
+CMD ["./vegeta-server"]
