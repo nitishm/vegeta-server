@@ -4,12 +4,11 @@ DATE=$(shell date +'%FT%TZ%z')
 CONTAINER_NAME ?= vegeta
 
 SERVER_DIR = cmd/server
-GO  = GO111MODULE=on go
 
 all: fmt lint build test
 
 build: deps fmt
-	CGO_ENABLED=0 ${GO} build -v -o bin/vegeta-server -a -tags=netgo \
+	CGO_ENABLED=0 go build -v -o bin/vegeta-server -a -tags=netgo \
 		-ldflags '-s -w -extldflags "-static" -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)' ${SERVER_DIR}/main.go
 
 clean:
@@ -18,25 +17,25 @@ clean:
 	rm -rf vendor
 
 deps:
-	${GO} mod vendor
-	${GO} mod download
+	go mod vendor
+	go mod download
 
 update-deps:
-	${GO} mod verify
-	${GO} mod tidy
+	go mod verify
+	go mod tidy
 
 install:
 	$(shell ./scripts/make-install.sh)
 
 test:
-	${GO} clean -testcache ./...
-	${GO} test -v -race -covermode=atomic ./...
+	go clean -testcache ./...
+	go test -v -race -covermode=atomic ./...
 
-	${GO} clean -testcache ./...
-	${GO} test -v -covermode=count -coverprofile=profile.cov ./...
+	go clean -testcache ./...
+	go test -v -covermode=count -coverprofile=profile.cov ./...
 
 fmt:
-	${GO} fmt ./...
+	go fmt ./...
 
 validate:
 	golangci-lint run

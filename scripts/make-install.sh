@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Install go binaries
-GO111MODULE=on go get golang.org/x/lint/golint
-GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint
-GO111MODULE=on go get github.com/gordonklaus/ineffassign
-GO111MODULE=on go get github.com/mattn/goveralls
+go get golang.org/x/lint/golint
+go get github.com/golangci/golangci-lint/cmd/golangci-lint
+go get github.com/gordonklaus/ineffassign
+go get github.com/mattn/goveralls
