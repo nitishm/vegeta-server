@@ -13,6 +13,8 @@ import (
 	"io"
 	"io/ioutil"
 	"vegeta-server/models"
+
+	"github.com/pkg/errors"
 )
 
 // AttackFunc provides type used by the attacker class
@@ -130,7 +132,7 @@ func (t *task) Complete(result io.Reader) error {
 
 	buf, err := ioutil.ReadAll(result)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to read result")
 	}
 
 	t.mu.Lock()

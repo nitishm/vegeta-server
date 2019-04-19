@@ -8,6 +8,8 @@ import (
 
 	"sync"
 	"vegeta-server/models"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -84,7 +86,7 @@ func (d *dispatcher) Dispatch(params models.AttackParams) (*models.AttackRespons
 
 	attackDetails, err := d.db.GetByID(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get attack by ID")
 	}
 	resp := models.AttackResponse(attackDetails.AttackInfo)
 	return &resp, nil
@@ -157,7 +159,7 @@ func (d *dispatcher) Cancel(id string, cancel bool) error {
 		err := t.Cancel()
 		if err != nil {
 			d.log(fields).WithError(err).Error("failed to cancel task")
-			return err
+			return errors.Wrap(err, "failed to cancel task")
 		}
 	}
 
@@ -174,7 +176,7 @@ func (d *dispatcher) Get(id string) (*models.AttackResponse, error) {
 
 	attackDetails, err := d.db.GetByID(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get item by ID")
 	}
 	resp := models.AttackResponse(attackDetails.AttackInfo)
 	return &resp, nil
