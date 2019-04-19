@@ -2,8 +2,11 @@ package reporter
 
 import (
 	"bytes"
+	"fmt"
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
+
+	"github.com/pkg/errors"
 )
 
 // IReporter provides an interface for all report generation operations.
@@ -35,7 +38,7 @@ func NewReporter(db models.IAttackStore) *reporter { //nolint: golint
 func (r *reporter) Get(id string) ([]byte, error) {
 	attack, err := r.db.GetByID(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to get attack with ID %s", id))
 	}
 
 	result := attack.Result
@@ -44,7 +47,7 @@ func (r *reporter) Get(id string) ([]byte, error) {
 		vegeta.NewFormat(vegeta.JSONFormatString),
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create report from reader")
 	}
 	return report, nil
 }
@@ -77,7 +80,7 @@ func (r *reporter) GetAll() [][]byte {
 func (r *reporter) GetInFormat(id string, format vegeta.Format) ([]byte, error) {
 	attack, err := r.db.GetByID(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to get attack with ID %s", id))
 	}
 
 	result := attack.Result
@@ -87,7 +90,7 @@ func (r *reporter) GetInFormat(id string, format vegeta.Format) ([]byte, error) 
 
 	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), attack.ID, format)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to create report from reader")
 	}
 	return report, nil
 }

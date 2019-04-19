@@ -7,6 +7,7 @@ import (
 	"io"
 	"vegeta-server/models"
 
+	"github.com/pkg/errors"
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
@@ -46,8 +47,9 @@ func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte,
 		var hist vegeta.Histogram
 		meta := format.Meta()
 		// Default bucket = "[0,500ms,1s,1.5s,2s,2.5s,3s]"
-		if err := hist.Buckets.UnmarshalText([]byte("[" + meta["bucket"] + "]")); err != nil {
-			return nil, err
+		b := "[" + meta["bucket"] + "]"
+		if err := hist.Buckets.UnmarshalText([]byte(b)); err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("failed to unmarshal bucket %s", b))
 		}
 		rep, report = vegeta.NewHistogramReporter(&hist), &hist
 	default:
@@ -63,7 +65,7 @@ decode:
 			if err == io.EOF {
 				break decode
 			}
-			return nil, err
+			return nil, errors.Wrap(err, "failed to decode result")
 		}
 
 		report.Add(&r)
@@ -76,7 +78,7 @@ decode:
 	buf := bytes.NewBuffer(b)
 	err := rep.Report(buf)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "reporter failed")
 	}
 
 	// Add ID to the report
@@ -85,7 +87,7 @@ decode:
 		var jsonReportResponse models.JSONReportResponse
 		err = json.Unmarshal(buf.Bytes(), &jsonReportResponse)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to unmarshal JSONReportResponse")
 		}
 		jsonReportResponse.ID = id
 		return json.Marshal(jsonReportResponse)

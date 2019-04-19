@@ -8,6 +8,7 @@ import (
 	"io"
 	"vegeta-server/models"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	vegeta "github.com/tsenart/vegeta/lib"
 )
@@ -17,7 +18,7 @@ func tlsConfig(insecure bool, key, cert string, rootCerts []string) (*tls.Config
 	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
 		log.WithError(err).Error("Vegeta TLS config failed")
-		return nil, err
+		return nil, errors.Wrap(err, "Vegeta TLS config failed")
 	}
 	c.Certificates = append(c.Certificates, certificate)
 	c.BuildNameToCertificate()
@@ -27,7 +28,7 @@ func tlsConfig(insecure bool, key, cert string, rootCerts []string) (*tls.Config
 		for _, rootCert := range rootCerts {
 			if !c.RootCAs.AppendCertsFromPEM([]byte(rootCert)) {
 				log.WithError(err).Error("Vegeta TLS config failed")
-				return nil, err
+				return nil, errors.Wrap(err, "Vegeta TLS config failed")
 			}
 		}
 	}
@@ -68,14 +69,14 @@ func Attack(name string, params models.AttackParams, quit chan struct{}) (io.Rea
 	opts, err := NewAttackOptsFromAttackParams(name, params)
 	if err != nil {
 		log.WithError(err).Error("vegeta attack failed")
-		return nil, err
+		return nil, errors.Wrap(err, "vegeta attack failed")
 	}
 
 	atk, result := attackWithOpts(opts)
 	if result == nil {
 		err := fmt.Errorf("empty channel returned")
 		log.WithError(err).Error("vegeta attack failed")
-		return nil, err
+		return nil, errors.Wrap(err, "vegeta attack failed")
 	}
 
 	buf := bytes.NewBuffer(nil)
@@ -89,7 +90,7 @@ loop:
 			}
 			if err := enc.Encode(r); err != nil {
 				log.WithError(err).Error("Vegeta attack failed")
-				return nil, err
+				return nil, errors.Wrap(err, "failed to encode result, vegeta attack failed")
 			}
 		case <-quit:
 			atk.Stop()

@@ -8,6 +8,9 @@ import (
 	"time"
 	"vegeta-server/models"
 
+	"fmt"
+
+	"github.com/pkg/errors"
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
@@ -41,7 +44,7 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 	// Set Duration
 	dur, err := time.ParseDuration(params.Duration)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to parse duration")
 	}
 
 	// Set timeout
@@ -59,12 +62,12 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 	// Set local address
 	laddr, err := net.ResolveIPAddr("ip", params.Laddr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to resolve IP address: %s", params.Laddr))
 	}
 
 	bBody, err := base64.StdEncoding.DecodeString(params.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to decode params.Body")
 	}
 
 	// Set Target
