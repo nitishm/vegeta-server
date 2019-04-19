@@ -5,7 +5,7 @@ CONTAINER_NAME ?= vegeta
 
 SERVER_DIR = cmd/server
 
-all: fmt lint build test
+all: deps fmt lint build test
 
 build: deps fmt
 	CGO_ENABLED=0 go build -v -o bin/vegeta-server -a -tags=netgo \
