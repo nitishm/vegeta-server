@@ -42,6 +42,8 @@ func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
 	filterMap := make(models.FilterParams)
 	status := c.DefaultQuery("status", "")
 	filterMap["status"] = status
+	createdBefore := c.DefaultQuery("created_before", "")
+	filterMap["created_before"] = createdBefore
 	resp := e.dispatcher.List(
 		//models.StatusFilter(status),
 		filterMap,

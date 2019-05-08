@@ -1,5 +1,9 @@
 package models
 
+import (
+	"time"
+)
+
 // AttackInfo encapsulates the attack information for attacks
 // submitted to the dispatcher
 type AttackInfo struct {
@@ -41,5 +45,26 @@ func StatusFilter(status string) Filter {
 		}
 
 		return false
+	}
+}
+
+// CreationBeforeFilter implements an attack create_before filter
+// in the Filter function format
+func CreationBeforeFilter(d string) Filter {
+	return func(a AttackDetails) bool {
+		if d == "" {
+			return true
+		}
+		const layoutUser = "2006-01-02"
+		t, err := time.Parse(layoutUser, d)
+
+		// If parsing failed, don't filter
+		if err != nil {
+			return true
+		}
+
+		attackTime, _ := time.Parse(time.RFC1123, a.CreatedAt)
+
+		return attackTime.Before(t)
 	}
 }
