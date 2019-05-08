@@ -216,7 +216,8 @@ func TestEndpoints_GetAttackEndpoint(t *testing.T) {
 					d := &dmocks.IDispatcher{}
 					d.
 						On("List", models.FilterParams{
-							"status": "",
+							"status":         "",
+							"created_before": "",
 						}).
 						Return([]*models.AttackResponse{})
 
