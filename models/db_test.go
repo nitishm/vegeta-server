@@ -132,6 +132,71 @@ func TestTaskMap_GetAll(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "OK - With Created_Before filter match",
+			tm: TaskMap{
+				"1": AttackDetails{
+					AttackInfo: AttackInfo{
+						ID:        "1",
+						CreatedAt: "2019-01-02",
+					},
+				},
+			},
+			args: args{
+				filterParams: FilterParams{
+					"created_before": "2020-02-05",
+				},
+			},
+			want: []AttackDetails{
+				{
+					AttackInfo: AttackInfo{
+						ID:        "1",
+						CreatedAt: "2019-01-02",
+					},
+				},
+			},
+		},
+		{
+			name: "OK - With Created_Before filter mismatch",
+			tm: TaskMap{
+				"1": AttackDetails{
+					AttackInfo: AttackInfo{
+						ID:        "1",
+						CreatedAt: "2019-01-02",
+					},
+				},
+			},
+			args: args{
+				filterParams: FilterParams{
+					"created_before": "bad date",
+				},
+			},
+			want: []AttackDetails{},
+		},
+		{
+			name: "OK - With Created_Before filter empty",
+			tm: TaskMap{
+				"1": AttackDetails{
+					AttackInfo: AttackInfo{
+						ID:        "1",
+						CreatedAt: "2019-01-02",
+					},
+				},
+			},
+			args: args{
+				filterParams: FilterParams{
+					"created_before": "",
+				},
+			},
+			want: []AttackDetails{
+				{
+					AttackInfo: AttackInfo{
+						ID:        "1",
+						CreatedAt: "2019-01-02",
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
