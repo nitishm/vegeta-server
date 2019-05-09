@@ -5,7 +5,7 @@
 ```
 curl --header "Content-Type: application/json" --request POST --data '{"rate": 5,"duration": "3s","target":{"method": "GET","URL": "http://0.0.0.0:80/api/v1/attack","scheme": "http"}}' http://0.0.0.0:80/api/v1/attack
 ```
- 
+
 ```json
 {
   "id": "494f98a2-7165-4d1b-8834-3226b49ab582",
@@ -115,7 +115,12 @@ curl http://0.0.0.0:80/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 }
 ```
 
-## List all attacks `GET /api/v1/attack`
+## List all attacks `GET /api/v1/attack[?{parameters}]`
+
+Availables parameters :
+* status : `scheduled | running | canceled | completed | failed`
+* created_before : `YYYY-mm-dd`
+* created_after : `YYYY-mm-dd`
 
 ```
 curl http://0.0.0.0:80/api/v1/attack/

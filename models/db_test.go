@@ -37,167 +37,47 @@ func TestTaskMap_Add(t *testing.T) {
 	}
 }
 
+// argsAll are args for the GetAll test case
+type argsAll struct {
+	filterParams FilterParams
+}
+
+// testAll is test struct for the GetAll test case
+type testAll struct {
+	name string
+	tm   TaskMap
+	args argsAll
+	want []AttackDetails
+}
+
 func TestTaskMap_GetAll(t *testing.T) {
-	type args struct {
-		filterParams FilterParams
-	}
-	tests := []struct {
-		name string
-		tm   TaskMap
-		args args
-		want []AttackDetails
-	}{
-		{
-			name: "OK",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID: "1",
-					},
-				},
-			},
-			args: args{
-				filterParams: make(FilterParams),
-			},
-			want: []AttackDetails{
-				{
-					AttackInfo: AttackInfo{
-						ID: "1",
-					},
+	tests := make([]testAll, 0)
+
+	ok := testAll{
+		name: "OK",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID: "1",
 				},
 			},
 		},
-		{
-			name: "OK - With Status filter match",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID:     "1",
-						Status: AttackResponseStatusCompleted,
-					},
-				},
-			},
-			args: args{
-				filterParams: FilterParams{
-					"status": "completed",
-				},
-			},
-			want: []AttackDetails{
-				{
-					AttackInfo: AttackInfo{
-						ID:     "1",
-						Status: AttackResponseStatusCompleted,
-					},
-				},
-			},
+		args: argsAll{
+			filterParams: make(FilterParams),
 		},
-		{
-			name: "OK - With Status filter mismatch",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID:     "1",
-						Status: AttackResponseStatusCompleted,
-					},
-				},
-			},
-			args: args{
-				filterParams: FilterParams{
-					"status": "failed",
-				},
-			},
-			want: []AttackDetails{},
-		},
-		{
-			name: "OK - With Status filter empty",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID:     "1",
-						Status: AttackResponseStatusCompleted,
-					},
-				},
-			},
-			args: args{
-				filterParams: FilterParams{
-					"status": "",
-				},
-			},
-			want: []AttackDetails{
-				{
-					AttackInfo: AttackInfo{
-						ID:     "1",
-						Status: AttackResponseStatusCompleted,
-					},
-				},
-			},
-		},
-		{
-			name: "OK - With Created_Before filter match",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID:        "1",
-						CreatedAt: "2019-01-02",
-					},
-				},
-			},
-			args: args{
-				filterParams: FilterParams{
-					"created_before": "2020-02-05",
-				},
-			},
-			want: []AttackDetails{
-				{
-					AttackInfo: AttackInfo{
-						ID:        "1",
-						CreatedAt: "2019-01-02",
-					},
-				},
-			},
-		},
-		{
-			name: "OK - With Created_Before filter mismatch",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID:        "1",
-						CreatedAt: "2019-01-02",
-					},
-				},
-			},
-			args: args{
-				filterParams: FilterParams{
-					"created_before": "bad date",
-				},
-			},
-			want: []AttackDetails{},
-		},
-		{
-			name: "OK - With Created_Before filter empty",
-			tm: TaskMap{
-				"1": AttackDetails{
-					AttackInfo: AttackInfo{
-						ID:        "1",
-						CreatedAt: "2019-01-02",
-					},
-				},
-			},
-			args: args{
-				filterParams: FilterParams{
-					"created_before": "",
-				},
-			},
-			want: []AttackDetails{
-				{
-					AttackInfo: AttackInfo{
-						ID:        "1",
-						CreatedAt: "2019-01-02",
-					},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID: "1",
 				},
 			},
 		},
 	}
+	tests = append(tests, ok)
+	tests = append(tests, dataStatus()...)
+	tests = append(tests, dataBefore()...)
+	tests = append(tests, dataAfter()...)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.tm.GetAll(tt.args.filterParams); !reflect.DeepEqual(got, tt.want) {
@@ -205,6 +85,255 @@ func TestTaskMap_GetAll(t *testing.T) {
 			}
 		})
 	}
+}
+
+func dataStatus() []testAll {
+	t := make([]testAll, 0)
+
+	match := testAll{
+		name: "OK - With Status filter match",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:     "1",
+					Status: AttackResponseStatusCompleted,
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"status": "completed",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:     "1",
+					Status: AttackResponseStatusCompleted,
+				},
+			},
+		},
+	}
+
+	mismatch := testAll{
+		name: "OK - With Status filter mismatch",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:     "1",
+					Status: AttackResponseStatusCompleted,
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"status": "failed",
+			},
+		},
+		want: []AttackDetails{},
+	}
+
+	empty := testAll{
+		name: "OK - With Status filter empty",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:     "1",
+					Status: AttackResponseStatusCompleted,
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"status": "",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:     "1",
+					Status: AttackResponseStatusCompleted,
+				},
+			},
+		},
+	}
+	t = append(t, match, mismatch, empty)
+
+	return t
+}
+
+func dataBefore() []testAll {
+	t := make([]testAll, 0)
+	match := testAll{
+		name: "OK - With Created_Before filter match",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+			"2": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Sun, 02 Jan 2022 01:00:00 MST",
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"created_before": "2020-02-05",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+	}
+
+	failed := testAll{
+		name: "OK - With Created_Before filter failed",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"created_before": "bad date",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+	}
+
+	empty := testAll{
+		name: "OK - With Created_Before filter empty",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"created_before": "",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+	}
+	t = append(t, match, failed, empty)
+
+	return t
+}
+
+func dataAfter() []testAll {
+	t := make([]testAll, 0)
+	match := testAll{
+		name: "OK - With Created_After filter match",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+			"2": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Sun, 02 Jan 2022 01:00:00 MST",
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"created_after": "2020-05-17",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Sun, 02 Jan 2022 01:00:00 MST",
+				},
+			},
+		},
+	}
+
+	failed := testAll{
+		name: "OK - With Created_After filter failed",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"created_after": "bad date",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+	}
+
+	empty := testAll{
+		name: "OK - With Created_After filter empty",
+		tm: TaskMap{
+			"1": AttackDetails{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+		args: argsAll{
+			filterParams: FilterParams{
+				"created_after": "",
+			},
+		},
+		want: []AttackDetails{
+			{
+				AttackInfo: AttackInfo{
+					ID:        "1",
+					CreatedAt: "Wed, 02 Jan 2019 01:00:00 MST",
+				},
+			},
+		},
+	}
+	t = append(t, match, failed, empty)
+
+	return t
 }
 
 func TestTaskMap_GetByID(t *testing.T) {
