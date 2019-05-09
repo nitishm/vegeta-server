@@ -218,6 +218,7 @@ func TestEndpoints_GetAttackEndpoint(t *testing.T) {
 						On("List", models.FilterParams{
 							"status":         "",
 							"created_before": "",
+							"created_after":  "",
 						}).
 						Return([]*models.AttackResponse{})
 
