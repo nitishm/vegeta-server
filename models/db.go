@@ -128,5 +128,11 @@ func createFilterChain(params FilterParams) []Filter {
 			CreationBeforeFilter(createdBefore.(string)),
 		)
 	}
+	if createdAfter, ok := params["created_after"]; ok {
+		filters = append(
+			filters,
+			CreationAfterFilter(createdAfter.(string)),
+		)
+	}
 	return filters
 }

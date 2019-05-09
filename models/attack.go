@@ -48,7 +48,7 @@ func StatusFilter(status string) Filter {
 	}
 }
 
-// CreationBeforeFilter implements an attack create_before filter
+// CreationBeforeFilter implements an attack created_before filter
 // in the Filter function format
 func CreationBeforeFilter(d string) Filter {
 	return func(a AttackDetails) bool {
@@ -66,5 +66,26 @@ func CreationBeforeFilter(d string) Filter {
 		attackTime, _ := time.Parse(time.RFC1123, a.CreatedAt)
 
 		return attackTime.Before(t)
+	}
+}
+
+// CreationAfterFilter implements an attack created_after filter
+// in the Filter function format
+func CreationAfterFilter(d string) Filter {
+	return func(a AttackDetails) bool {
+		if d == "" {
+			return true
+		}
+		const layoutUser = "2006-01-02"
+		t, err := time.Parse(layoutUser, d)
+
+		// If parsing failed, don't filter
+		if err != nil {
+			return true
+		}
+
+		attackTime, _ := time.Parse(time.RFC1123, a.CreatedAt)
+
+		return attackTime.After(t)
 	}
 }

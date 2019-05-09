@@ -40,10 +40,9 @@ func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 // GetAttackEndpoint implements a handler for the GET /api/v1/attack endpoint
 func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
 	filterMap := make(models.FilterParams)
-	status := c.DefaultQuery("status", "")
-	filterMap["status"] = status
-	createdBefore := c.DefaultQuery("created_before", "")
-	filterMap["created_before"] = createdBefore
+	filterMap["status"] = c.DefaultQuery("status", "")
+	filterMap["created_before"] = c.DefaultQuery("created_before", "")
+	filterMap["created_after"] = c.DefaultQuery("created_after", "")
 	resp := e.dispatcher.List(
 		//models.StatusFilter(status),
 		filterMap,
