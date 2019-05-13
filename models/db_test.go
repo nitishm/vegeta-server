@@ -182,7 +182,7 @@ func dataBefore() []testAll {
 		},
 		args: argsAll{
 			filterParams: FilterParams{
-				"created_before": "2020-02-05",
+				"created_before": "2020-02-05 01:00:02",
 			},
 		},
 		want: []AttackDetails{
@@ -269,7 +269,7 @@ func dataAfter() []testAll {
 		},
 		args: argsAll{
 			filterParams: FilterParams{
-				"created_after": "2020-05-17",
+				"created_after": "2020-05-17 01:02:03",
 			},
 		},
 		want: []AttackDetails{
