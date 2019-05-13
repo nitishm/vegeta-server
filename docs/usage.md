@@ -119,8 +119,8 @@ curl http://0.0.0.0:80/api/v1/attack/494f98a2-7165-4d1b-8834-3226b49ab582
 
 Availables parameters :
 * status : `scheduled | running | canceled | completed | failed`
-* created_before : `YYYY-mm-dd+hh:ii:ss` (must be url-encoded)
-* created_after : `YYYY-mm-dd hh:ii:ss`
+* created_before : `YYYY-mm-dd+hh:ii:ss` (date must be url-encoded)
+* created_after : `YYYY-mm-dd hh:ii:ss` (date must be url-encoded)
 
 ```
 curl http://0.0.0.0:80/api/v1/attack/
