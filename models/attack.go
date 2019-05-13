@@ -55,9 +55,9 @@ func CreationBeforeFilter(d string) Filter {
 		if d == "" {
 			return true
 		}
-		const layoutUser = "2006-01-02"
-		t, err := time.Parse(layoutUser, d)
 
+		const layoutUser = "2006-01-02 15:04:05"
+		t, err := time.ParseInLocation(layoutUser, d, time.Local)
 		// If parsing failed, don't filter
 		if err != nil {
 			return true
@@ -76,7 +76,7 @@ func CreationAfterFilter(d string) Filter {
 		if d == "" {
 			return true
 		}
-		const layoutUser = "2006-01-02"
+		const layoutUser = "2006-01-02 15:04:05"
 		t, err := time.Parse(layoutUser, d)
 
 		// If parsing failed, don't filter

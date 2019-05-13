@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"net/http"
+	"net/url"
 	"vegeta-server/models"
 
 	"github.com/gin-gonic/gin"
@@ -39,9 +40,16 @@ func (e *Endpoints) GetAttackByIDEndpoint(c *gin.Context) {
 
 // GetAttackEndpoint implements a handler for the GET /api/v1/attack endpoint
 func (e *Endpoints) GetAttackEndpoint(c *gin.Context) {
+	var err error
 	filterMap := make(models.FilterParams)
 	filterMap["status"] = c.DefaultQuery("status", "")
-	filterMap["created_before"] = c.DefaultQuery("created_before", "")
+	b := c.DefaultQuery("created_before", "")
+	filterMap["created_before"], err = url.QueryUnescape(b)
+	if err != nil {
+		ginErrBadRequest(c, err)
+		return
+	}
+
 	filterMap["created_after"] = c.DefaultQuery("created_after", "")
 	resp := e.dispatcher.List(
 		//models.StatusFilter(status),
