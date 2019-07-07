@@ -1,8 +1,11 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // IAttackStore captures all methods related to storing and retrieving attack details
@@ -25,6 +28,107 @@ type IAttackStore interface {
 }
 
 var mu sync.RWMutex
+
+// Redis stores all Attack/Report information in a redis database
+type Redis struct {
+	connFn func() redis.Conn
+}
+
+func NewRedis(f func() redis.Conn) Redis {
+	return Redis{
+		f,
+	}
+}
+
+func (r Redis) Add(attack AttackDetails) error {
+	conn := r.connFn()
+	defer conn.Close()
+
+	v, err := json.Marshal(attack)
+	if err != nil {
+		return err
+	}
+	_, err = conn.Do("SET", attack.ID, v)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r Redis) GetAll(filterParams FilterParams) []AttackDetails {
+	var attacks []AttackDetails
+	filters := createFilterChain(filterParams)
+	conn := r.connFn()
+	defer conn.Close()
+
+	res, err := conn.Do("KEYS", "*")
+	if err != nil {
+		return nil
+	}
+	attackIDs, ok := res.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, attackID := range attackIDs {
+		var attack AttackDetails
+
+		res, err := conn.Do("GET", attackID)
+		if err != nil {
+			return nil
+		}
+
+		err = json.Unmarshal(res.([]byte), &attack)
+		if err != nil {
+			return nil
+		}
+		for _, filter := range filters {
+			if !filter(attack) {
+				goto skip
+			}
+		}
+		attacks = append(attacks, attack)
+	skip:
+	}
+
+	return attacks
+}
+
+func (r Redis) GetByID(id string) (AttackDetails, error) {
+	var attack AttackDetails
+	conn := r.connFn()
+	defer conn.Close()
+
+	res, err := conn.Do("GET", id)
+	if err != nil {
+		return attack, err
+	}
+
+	err = json.Unmarshal(res.([]byte), &attack)
+	if err != nil {
+		return attack, err
+	}
+
+	return attack, err
+}
+
+func (r Redis) Update(id string, attack AttackDetails) error {
+	if attack.ID != id {
+		return fmt.Errorf("update ID %s and attack ID %s do not match", id, attack.ID)
+	}
+	return r.Add(attack)
+}
+
+func (r Redis) Delete(id string) error {
+	conn := r.connFn()
+	defer conn.Close()
+
+	_, err := conn.Do("DEL", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // TaskMap is a map of attack ID's to their AttackDetails
 type TaskMap map[string]AttackDetails
