@@ -56,7 +56,8 @@ func (r Redis) Add(attack AttackDetails) error {
 }
 
 func (r Redis) GetAll(filterParams FilterParams) []AttackDetails {
-	var attacks []AttackDetails
+	attacks := make([]AttackDetails, 0)
+
 	filters := createFilterChain(filterParams)
 	conn := r.connFn()
 	defer conn.Close()
