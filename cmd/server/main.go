@@ -11,7 +11,9 @@ import (
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
 
-	gin "github.com/gin-gonic/gin"
+	"github.com/gomodule/redigo/redis"
+
+	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,10 +27,11 @@ var (
 )
 
 var (
-	ip    = kingpin.Flag("ip", "Server IP Address.").Default("0.0.0.0").String()
-	port  = kingpin.Flag("port", "Server Port.").Default("80").String()
-	v     = kingpin.Flag("version", "Version Info").Short('v').Bool()
-	debug = kingpin.Flag("debug", "Enabled Debug").Bool()
+	ip        = kingpin.Flag("ip", "Server IP Address.").Default("0.0.0.0").String()
+	port      = kingpin.Flag("port", "Server Port.").Default("80").String()
+	redisHost = kingpin.Flag("redis", "Redis Server Address.").String()
+	v         = kingpin.Flag("version", "Version Info").Short('v').Bool()
+	debug     = kingpin.Flag("debug", "Enabled Debug").Bool()
 )
 
 func main() {
@@ -56,7 +59,19 @@ func main() {
 	quit := make(chan struct{})
 	defer close(quit)
 
-	db := models.NewTaskMap()
+	var db models.IAttackStore
+
+	if redisHost != nil && *redisHost != "" {
+		db = models.NewRedis(func() redis.Conn {
+			conn, err := redis.Dial("tcp", *redisHost)
+			if err != nil {
+				log.Fatalf("Failed to connect to redis-server @ %s", *redisHost)
+			}
+			return conn
+		})
+	} else {
+		db = models.NewTaskMap()
+	}
 
 	d := dispatcher.NewDispatcher(
 		db,
