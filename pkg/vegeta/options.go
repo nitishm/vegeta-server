@@ -51,7 +51,7 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 	timeout, _ := time.ParseDuration(params.Timeout)
 
 	// Set target headers
-	var hdr http.Header
+	hdr := make(http.Header)
 	for _, h := range params.Headers {
 		hdr.Add(h.Key, h.Value)
 	}
