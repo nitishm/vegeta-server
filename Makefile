@@ -48,7 +48,7 @@ ineffassign:
 	ineffassign .
 
 run: build
-	$(shell bin/vegeta-server --scheme=http --host=localhost --port=8000)
+	$(shell bin/vegeta-server --ip=localhost --port=8000)
 
 container:
 	docker build -t vegeta-server:latest .
