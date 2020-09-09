@@ -15,20 +15,21 @@ import (
 
 func tlsConfig(insecure bool, key, cert string, rootCerts []string) (*tls.Config, error) {
 	c := tls.Config{InsecureSkipVerify: insecure} // nolint: gosec
-	certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
-	if err != nil {
-		log.WithError(err).Error("Vegeta TLS config failed")
-		return nil, errors.Wrap(err, "Vegeta TLS config failed")
-	}
-	c.Certificates = append(c.Certificates, certificate)
-	c.BuildNameToCertificate()
-
-	if len(rootCerts) > 0 {
-		c.RootCAs = x509.NewCertPool()
-		for _, rootCert := range rootCerts {
-			if !c.RootCAs.AppendCertsFromPEM([]byte(rootCert)) {
-				log.WithError(err).Error("Vegeta TLS config failed")
-				return nil, errors.Wrap(err, "Vegeta TLS config failed")
+	if key != "" && cert != "" {
+		certificate, err := tls.X509KeyPair([]byte(cert), []byte(key))
+		if err != nil {
+			log.WithError(err).Error("Vegeta TLS config failed")
+			return nil, errors.Wrap(err, "Vegeta TLS config failed")
+		}
+		c.Certificates = append(c.Certificates, certificate)
+		c.BuildNameToCertificate()
+		if len(rootCerts) > 0 {
+			c.RootCAs = x509.NewCertPool()
+			for _, rootCert := range rootCerts {
+				if !c.RootCAs.AppendCertsFromPEM([]byte(rootCert)) {
+					log.WithError(err).Error("Vegeta TLS config failed")
+					return nil, errors.Wrap(err, "Vegeta TLS config failed")
+				}
 			}
 		}
 	}
@@ -36,14 +37,9 @@ func tlsConfig(insecure bool, key, cert string, rootCerts []string) (*tls.Config
 }
 
 func attackWithOpts(opts *AttackOpts) (*vegeta.Attacker, <-chan *vegeta.Result) {
-	var c *tls.Config
-
-	if opts.Cert != "" && opts.Key != "" {
-		tlsConfig, err := tlsConfig(opts.Insecure, opts.Key, opts.Cert, opts.RootCerts)
-		if err != nil {
-			return nil, nil
-		}
-		c = tlsConfig
+	tlsc, err := tlsConfig(opts.Insecure, opts.Key, opts.Cert, opts.RootCerts)
+	if err != nil {
+		return nil, nil
 	}
 
 	atk := vegeta.NewAttacker(
@@ -55,7 +51,7 @@ func attackWithOpts(opts *AttackOpts) (*vegeta.Attacker, <-chan *vegeta.Result) 
 		vegeta.HTTP2(opts.HTTP2),
 		vegeta.H2C(opts.H2c),
 		vegeta.MaxBody(opts.MaxBody),
-		vegeta.TLSConfig(c),
+		vegeta.TLSConfig(tlsc),
 		vegeta.LocalAddr(*opts.Laddr.IPAddr),
 	)
 
